@@ -1,0 +1,112 @@
+<?php
+
+namespace Mcdcu\Projects\controllers\returns;
+
+use Mcdcu\Projects\services\employees\employeesService;
+use Mcdcu\Projects\services\Inventory\InventoryAssignmentService;
+use Mcdcu\Projects\services\Inventory\InventoryItemService;
+use Mcdcu\Projects\services\returns\returnService;
+use sigawa\mvccore\Application;
+use sigawa\mvccore\Request;
+use sigawa\mvccore\Response;
+use sigawa\mvccore\Controller;
+use sigawa\mvccore\exception\ValidationException;
+
+class returnController extends Controller
+{
+    protected returnService $service;
+    protected InventoryAssignmentService $inventoryService;
+    protected InventoryItemService $itemService;
+    protected employeesService $employeeService;
+
+    public function __construct()
+    {
+        $this->service = new returnService();
+        $this->itemService = new InventoryItemService();
+        $this->employeeService = new employeesService();
+        $this->inventoryService = new InventoryAssignmentService();
+    }
+
+    public function index()
+    {  
+        $items = $this->itemService->getAll();
+        $employees = $this->employeeService->getAll();
+        $assignments = $this->inventoryService->getAll();
+        $returns = $this->service->getAll();
+        $this->setLayout("admin");
+        return $this->render('returns', ['returns' => $returns, 
+        'assignments' => $assignments, 'employees' => $employees, 'items' => $items]);
+    }
+
+    public function create(Request $request, Response $response)
+    {
+        if ($request->isPost()) {
+            $data = $request->getBody();
+            try { 
+                $user = Application::$app->user;
+    if (!$user) {
+        throw new ValidationException(['user' => 'User must be logged in to create a department.']);
+    }
+    $data['received_by'] = $user->id;
+    $employeeId = $data['employee_id'] ?? null;
+$itemId = $data['inventory_item_id'] ?? null;
+
+if (!$employeeId || !$itemId) {
+    throw new ValidationException(['employee_id or inventory_item_id missing']);
+}
+
+// Find the assignment that matches both
+$assignment = $this->inventoryService->findAssignment($employeeId, $itemId);
+if (!$assignment) {
+    throw new ValidationException(['No assignment found for this employee and item.']);
+}
+
+$data['inventory_assignment_id'] = $assignment->id;
+                $item = $this->service->create($data);
+                return $response->json(['message' =>'Item ruturned successfully.','data' => $item]);
+            } catch (ValidationException $th) {
+                //throw $th;
+                return $response->json(['error' => $th->errors], 400);
+            }
+           
+        }
+
+        return $response->json(['error' => 'Invalid request method.'],400);
+    }
+
+    public function update(Request $request, Response $response)
+    {
+        if ($request->isPut()) {
+            $data = $request->getBody();
+            try {
+                $id = $request->getParam('id');
+                $item = $this->service->update((int)$id, $data);
+                return $response->json(['message' => 'Item updated successfully.', 'data' => $item]);
+            } catch (ValidationException $th) {
+                return $response->json(['error' => $th->errors], 400);
+            }
+        }
+          return $response->json(['error' => 'Invalid request method.'],400);
+    }
+
+    public function delete(Request $request, Response $response)
+    {
+    if ($request->isDelete()) {
+        try {
+            $id = $request->getParam('id');
+            $this->service->delete((int)$id);
+            return $response->json(['message' => 'Item deleted successfully.']);
+        } catch (ValidationException $th) {
+            return $response->json(['error' => $th->errors], 400);
+        }
+    }
+     return $response->json(['error' => 'Invalid request method.'],400);
+    }
+
+    public function search(Request $request)
+    {
+        $term = $request->getParam('term');
+        $items = $this->service->search($term, ['name', 'description', 'brand', 'serial_number']);
+        return $this->render('inventory_items/index', ['items' => $items]);
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "mcdcu/projects",
+    "description": "ICT inventory managemen system for easy issaunce and tracking of returns upon staff exit/re-designation",
+    "autoload": {
+        "psr-4": {
+            "Mcdcu\\Projects\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "Meru Dairy",
+            "email": "ict@merudairy.co.ke"
+        }
+    ],
+    "require": {
+        "sigawa/mvc-core": "^1.2"
+    }
+}
