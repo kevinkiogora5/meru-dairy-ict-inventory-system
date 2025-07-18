@@ -43,6 +43,15 @@ class InventoryAssignmentController extends Controller
         return $this->render('assignment', ['assignments' => $assignments,
         'employees'=> $employees,'locations'=> $locations,'items'=>$items]);
     }
+public function getUnassignedItems(Request $request, Response $response)
+{
+    try {
+        $items = $this->itemService->getUnassignedItems(); 
+        return $response->json($items);
+    } catch (\Exception $e) {
+        return $response->json(['error' => $e->getMessage()], 500);
+    }
+}
 
    
     public function create(Request $request, Response $response)

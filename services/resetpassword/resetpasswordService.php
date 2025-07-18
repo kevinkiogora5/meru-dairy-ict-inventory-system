@@ -57,51 +57,38 @@ class resetpasswordService
 
     // ... resetPassword method (not shown here for brevity)
 
-    public function resetPassword(string $token, string $newPassword, string $confirmPassword): void
-    {
-        if (empty($token)) {
-            throw new ValidationException(['token' => 'Reset token is required.']);
-        }
+   public function resetPassword(string $code, string $newPassword, string $confirmPassword): void
+{
 
-        if (empty($newPassword) || strlen($newPassword) < 8) {
-            throw new ValidationException(['password' => 'Password must be at least 8 characters.']);
-        }
-
-        if ($newPassword !== $confirmPassword) {
-            throw new ValidationException(['password' => 'Passwords do not match.']);
-        }
-
-        $tkngen = new TokenGenerator(
-            32,
-            1800,
-            "password_reset_key",
-            Application::$app->db->pdo,
-            'password_resets',
-            $this->columnMap
-        );
-
-        $isValid = $tkngen->verifyToken($token, 'staff');
-        if (!$isValid) {
-            throw new ValidationException(['token' => 'Invalid or expired token.']);
-        }
-
-        $tokenRow = resetpassword::findOne(['reset_token' => $token]);
-        if (!$tokenRow) {
-            throw new ValidationException(['token' => 'Reset token not found.']);
-        }
-
-        $user = users::findOne(['id' => $tokenRow->user_id]);
-        if (!$user) {
-            throw new ValidationException(['user' => 'User not found.']);
-        }
-
-        $user->password = $newPassword;
-        $user->password_created_at = date('Y-m-d H:i:s');
-
-        if (!$user->save()) {
-            throw new ValidationException(['save' => 'Failed to save new password.']);
-        }
-
-        $tokenRow->delete();
+    if (strlen($newPassword) < 8) {
+        throw new ValidationException(['password' => 'Password must be at least 8 characters.']);
     }
+
+    if ($newPassword !== $confirmPassword) {
+        throw new ValidationException(['password' => 'Passwords do not match.']);
+    }
+
+    $resetRow = resetpassword::findOne(['reset_token' => $code]);
+
+    if (!$resetRow) {
+        throw new ValidationException(['code' => 'Invalid reset code.']);
+    }
+
+    if (strtotime($resetRow->reset_token_expires_at) < time()) {
+        throw new ValidationException(['code' => 'Reset code has expired.']);
+    }
+
+    $user = users::findOne(['id' => $resetRow->user_id]);
+    if (!$user) {
+        throw new ValidationException(['user' => 'User not found.']);
+    }
+
+    $user->password = password_hash($newPassword, PASSWORD_DEFAULT);
+
+    if (!$user->save()) {
+        throw new ValidationException(['save' => 'Failed to save new password.']);
+    }
+
+    $resetRow->delete(); // delete OTP record after use
+}
 }

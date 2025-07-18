@@ -30,6 +30,21 @@ public function getAll(): array
 ";
     return InventoryAssignment::findAllByQuery($sql);
 }
+public function getAssignmentsByEmployee(int $employeeId): array
+{
+    // SQL to get assignments that are active and NOT yet returned
+    $sql = "
+        SELECT ia.id, ia.inventory_item_id as item_id, i.name, i.serial_number
+        FROM inventory_assignment ia
+        JOIN inventory_items i ON ia.inventory_item_id = i.id
+        LEFT JOIN returns r ON ia.id = r.inventory_assignment_id AND r.deleted_at IS NULL
+        WHERE ia.employee_id = :employee_id
+        AND ia.deleted_at IS NULL
+        AND r.id IS NULL -- no return record exists (not yet returned)
+    ";
+
+    return InventoryAssignment::findAllByQuery($sql, ['employee_id' => $employeeId]);
+}
 
     public function create(array $data): ?InventoryAssignment
     {

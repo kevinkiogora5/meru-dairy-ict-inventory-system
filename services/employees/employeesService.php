@@ -25,6 +25,17 @@ class employeesService
     ";
     return employees::findAllByQuery($sql);
 }
+public function getEmployeesWithAssignments(): array
+{
+    $sql = "
+        SELECT DISTINCT e.*
+        FROM employees e
+        INNER JOIN inventory_assignment ia ON ia.employee_id = e.id
+        WHERE ia.deleted_at IS NULL
+    ";
+    return employees::findAllByQuery($sql);
+}
+
 
 
     public function create(array $data): ?employees

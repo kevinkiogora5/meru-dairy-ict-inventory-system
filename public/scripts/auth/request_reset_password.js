@@ -28,10 +28,18 @@ $(document).ready(function () {
           processData: false,
           contentType: false,
           success: function (response) {
-              $("#resetBtn").css("display", "none");
-              $("#loginBtn").css("display", "block");
-            alert(response.message);
-          },
+    $("#resetBtn").css("display", "none");
+    $("#loginBtn").css("display", "block");
+    alert(response.message);
+
+    // Redirect to reset password page with token (adjust URL and token param as needed)
+    if (response.resetToken) {
+        window.location.href = `/reset_password?token=${response.resetToken}`;
+    } else {
+        // fallback if no token sent
+        window.location.href = `/reset_password`;
+    }
+},
           error: function (xhr, status, error) { 
               $button.html(` Request Reset Password`).prop("disabled", false);
               console.log(xhr)

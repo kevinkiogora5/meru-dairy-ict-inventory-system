@@ -33,42 +33,52 @@ class returnService
     }
 
     public function create(array $data): ?returns
-    {
-        if (empty($data)) {
-            throw new ValidationException(['Invalid data.']);
-        }
-        $items = new returns();
-        $items->loadData($data);
-        if(!$items->validate()) {
-            throw new ValidationException($items->getErrorMessages());
-        }
-        if (!$items->save()) {
-            throw new ValidationException($items->getErrorMessages());
-        }
-         // ✅ Fetch assignment
-    $assignment =InventoryAssignment::findOne([
+{
+    if (empty($data)) {
+        throw new ValidationException(['Invalid data.']);
+    }
+
+    // ✅ Check if item has already been returned
+    $existingReturn = returns::findOne([
+        'inventory_assignment_id' => $data['inventory_assignment_id'],
+        'deleted_at' => null
+    ]);
+
+    if ($existingReturn) {
+        throw new ValidationException(['This item has already been returned.']);
+    }
+
+    $items = new returns();
+    $items->loadData($data);
+
+    if (!$items->validate()) {
+        throw new ValidationException($items->getErrorMessages());
+    }
+
+    if (!$items->save()) {
+        throw new ValidationException($items->getErrorMessages());
+    }
+
+    // ✅ Fetch assignment
+    $assignment = InventoryAssignment::findOne([
         'id' => $data['inventory_assignment_id'],
         'deleted_at' => null
     ]);
 
     if ($assignment) {
-        // ✅ Soft-delete the assignment
         $assignment->deleted_at = date('Y-m-d H:i:s');
         $assignment->save();
 
-        // ✅ Mark the inventory item as 'Available'
-        $item =InventoryItem::findOne([
-            'id' => $assignment->inventory_item_id
-        ]);
-
+        // ✅ Mark inventory item as available
+        $item = InventoryItem::findOne(['id' => $assignment->inventory_item_id]);
         if ($item) {
             $item->status = 'Available';
             $item->save();
         }
     }
 
-        return $items;
-    }
+    return $items;
+}
 
     public function update(int $id, array $data) : ?returns
     {

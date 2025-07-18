@@ -45,9 +45,6 @@
     <label class="form-label">Inventory Item</label>
     <select class="form-select" id="inventory_item_id" name="inventory_item_id" required>
         <option value="">-- Select Inventory Item --</option>
-        <?php foreach ($items as $item): ?>
-            <option value="<?= $item->id ?>"><?= htmlspecialchars($item->name) ?></option>
-        <?php endforeach; ?>
     </select>
 </div>
     <div class="col-md-6">

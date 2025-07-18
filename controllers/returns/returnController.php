@@ -36,13 +36,24 @@ class returnController extends Controller
     public function index()
     {  
         $items = $this->itemService->getAll();
-        $employees = $this->employeeService->getAll();
-        $assignments = $this->inventoryService->getAll();
+        $employees = $this->employeeService->getEmployeesWithAssignments();
         $returns = $this->service->getAll();
         $this->setLayout("admin");
         return $this->render('returns', ['returns' => $returns, 
-        'assignments' => $assignments, 'employees' => $employees, 'items' => $items]);
+         'employees' => $employees, 'items' => $items]);
     }
+   public function getAssignmentsByEmployee(Request $request, Response $response)
+{
+    $employeeId = (int) $request->getParam('employee_id');
+
+    if (!$employeeId) {
+        return $response->json([]);
+    }
+
+    $assignments = $this->inventoryService->getAssignmentsByEmployee($employeeId);
+
+    return $response->json($assignments);
+}
 
     public function create(Request $request, Response $response)
     {

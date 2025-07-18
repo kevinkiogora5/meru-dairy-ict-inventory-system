@@ -36,11 +36,11 @@ class resetpasswordController extends Controller
     $email = $request->getBody()['email'] ?? null;
 
     try {
-        $this->passwordService->sendResetLink($email);
+        $this->passwordService->sendResetCode($email); // use OTP method
 
         return $response->json([
             'success' => true,
-            'message' => "Password reset link has been sent to your email."
+            'message' => "A reset code has been sent to your email."
         ], 200);
 
     } catch (\Exception $e) {
@@ -50,7 +50,6 @@ class resetpasswordController extends Controller
         ], 400);
     }
 }
-
     public function resetPasswordForm()
     {
         $this->setLayout("login");
@@ -70,7 +69,7 @@ class resetpasswordController extends Controller
             $data = $request->getBody();
             $token = $data['token'] ?? '';
             $password = $data['password'] ?? '';
-            $confirmPassword = $data['confirmPassword'] ?? '';
+            $confirmPassword = $data['confirm_password'] ?? '';
 
             $this->passwordService->resetPassword($token, $password, $confirmPassword);
 

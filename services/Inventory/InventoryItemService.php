@@ -31,6 +31,18 @@ class InventoryItemService
 
     return InventoryItem::findByQuery($sql);
 }
+public function getUnassignedItems(): array
+{
+    $sql = "
+        SELECT ii.id, ii.name, ii.serial_number
+        FROM inventory_items ii
+        LEFT JOIN inventory_assignment ia ON ii.id = ia.inventory_item_id AND ia.deleted_at IS NULL
+        WHERE ia.id IS NULL
+        AND ii.deleted_at IS NULL
+    ";
+
+    return InventoryItem::findAllByQuery($sql);
+}
 
     public function create(array $data): ?InventoryItem
     {

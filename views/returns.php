@@ -44,10 +44,7 @@
 <div class="col-md-6">
     <label class="form-label">Return Item</label>
     <select class="form-select" id="inventory_item_id" name="inventory_item_id" required>
-        <option value="">-- Select Return Item --</option>
-        <?php foreach ($items as $item): ?>
-            <option value="<?= $item->id ?>"><?= htmlspecialchars($item->name) ?></option>
-        <?php endforeach; ?>
+        <option value="">-- Select Employee first --</option>
     </select>
 </div>
                                             <div class="col-md-6">
