@@ -48,46 +48,18 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                    <th>Created On</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if(!empty($categories)) : ?>
-                                    <?php foreach ($categories as $category) : ?>
-                                        <tr data-id="<?= $category->id ?>">
-                                            <td><?= $category->id ?></td>
-                                            <td><?= htmlspecialchars($category->type) ?></td>
-                                            <td><?= htmlspecialchars($category->description) ?></td>
-                                            <td><?= htmlspecialchars($category->created_at) ?></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning" onclick="openModal(<?= $category->id ?>)">Edit</button>
-                                                <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center">No categories found.</td>
-                                    </tr>
-                                <?php endif; ?>
-        </div>
-        <!-- Tooltips end -->
-    </div>
+                 <!-- Grid.js Table Placeholder -->
+                    <div class="card-body">
+                        <div id="grid-wrapper"></div>
+                    </div>
     <!-- Form Validation end -->
 
     </div>
 </main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/scripts/base/base.js"></script>
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <script>
     var categories = <?php echo json_encode($categories) ?>;
 </script>

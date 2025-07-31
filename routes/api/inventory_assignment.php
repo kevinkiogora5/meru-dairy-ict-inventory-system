@@ -8,3 +8,5 @@ $router->post('/assignment/update/{id}', [InventoryAssignmentController::class, 
 $router->delete('/assignment/delete/{id}', [InventoryAssignmentController::class, 'delete']);
 $router->get('/inventory/unassigned-items', [InventoryAssignmentController::class, 'getUnassignedItems']);
 $router->get('/search', [InventoryAssignmentController::class, 'actionSearch']);
+$router->get('/assignment/list', [InventoryAssignmentController::class, 'list']);
+

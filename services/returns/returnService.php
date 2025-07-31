@@ -11,24 +11,23 @@ class returnService
 {
     public function getAll(): array
     {
-      $sql = "
-    SELECT 
-        r.id,
-        r.returned_condition,
-        r.return_date,
-        r.comments,
-        r.inventory_assignment_id,
-        ia.employee_id,
-        ia.inventory_item_id,
-        i.name AS inventory_item_name,
-        CONCAT(e.first_name, ' - ', e.last_name) AS employee_email
-    FROM returns r
-    LEFT JOIN inventory_assignment ia ON r.inventory_assignment_id = ia.id
-    LEFT JOIN inventory_items i ON ia.inventory_item_id = i.id
-    LEFT JOIN employees e ON ia.employee_id = e.id
-    WHERE r.deleted_at IS NULL
-    ORDER BY r.return_date DESC
-";
+      $sql = " SELECT 
+                r.id,
+                r.returned_condition,
+                r.return_date,
+                r.comments,
+                r.inventory_assignment_id,
+                ia.employee_id,
+                ia.inventory_item_id,
+                i.name AS inventory_item_name,
+                CONCAT(e.first_name, ' - ', e.last_name) AS employee_email
+            FROM returns r
+            LEFT JOIN inventory_assignment ia ON r.inventory_assignment_id = ia.id
+            LEFT JOIN inventory_items i ON ia.inventory_item_id = i.id
+            LEFT JOIN employees e ON ia.employee_id = e.id
+            WHERE r.deleted_at IS NULL
+            ORDER BY r.return_date DESC
+            ";
         return returns::findAllByQuery($sql);
     }
 

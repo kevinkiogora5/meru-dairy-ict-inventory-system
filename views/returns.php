@@ -63,45 +63,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Employee Names</th>
-                                    <th>Returned Item</th>
-                                    <th>Return Condition</th>
-                                    <th>Return Date</th>
-                                    <th>Comments</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($returns)): ?>                                    
-                                <?php foreach ($returns as $return): ?>
-                                    <tr data-id="<?= $return->id ?>">
-                                        <td><?= $return->id ?></td>
-                                        <td><?= htmlspecialchars($return->employee_email) ?></td>
-                                        <td><?= htmlspecialchars($return->inventory_item_name) ?></td>
-                                        <td><?= htmlspecialchars($return->returned_condition) ?></td>
-                                        <td><?= htmlspecialchars($return->return_date) ?></td>
-                                        <td><?= htmlspecialchars($return->comments) ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-warning " onclick="openModal(<?= $return->id ?>)">Edit</button>
-                                            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                <?php else: ?>
-                                <tr>
-                                        <td colspan="5" class="text-center">No returns found.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                <!-- Grid.js Table Placeholder -->
+                    <div class="card-body">
+                        <div id="grid-wrapper"></div>
                     </div>
-                </div>
             </div>
         </div>
         <!-- Tooltips end -->
@@ -112,6 +77,8 @@
 </main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/scripts/base/base.js"></script>
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <script>
     var returns = <?php echo json_encode($returns) ?>;
 </script>

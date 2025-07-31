@@ -1,3 +1,4 @@
+let categoryGrid = null;
 function showToast(message, success =true){
     Toastify({
          text: message,
@@ -16,8 +17,55 @@ function showToast(message, success =true){
         }
     }).showToast();
 }
+function buildGridData(data) {
+   return data.map(category => [
+        category.id,
+        category.type,
+        category.description,
+        category.created_at,
+        gridjs.html(`
+            <button class="btn btn-sm btn-warning" onclick="openModal(${category.id})">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}">Delete</button>
+        `)
+    ]);
+}
+function renderGrid() {
+    if (!categories || categories.length === 0) {
+        $('#grid-wrapper').html('<p class="text-center mt-3">No categories found.</p>');
+        return;
+    }
+    const gridData = buildGridData(categories);
+    new gridjs.Grid({
+        columns: ['ID', 'Type', 'Description', 'Created On', 'Actions'],
+        data: gridData,
+        pagination: {
+            enabled: true,
+            limit: 5,
+            summary: true
+        },
+        search: true,
+        sort: true
+    }).render(document.getElementById("grid-wrapper"));
+}
+function fetchCategories() {
+    $.get('/category/list', function (data) {
+        categories = data;
+        if (categoryGrid) {
+            categoryGrid.updateConfig({
+                data: buildGridData(categories)
+            }).forceRender();
+        }else {
+            renderGrid();
+        }
+    });
+}
+
 function openModal(id) {
     var category = categories.find((cat) => cat.id == id);
+    if (!category) {
+        showToast('Category not found', false);
+        return;
+    }
 
     // Show modal
     $('#exampleModal').modal('show');
@@ -33,6 +81,16 @@ function openModal(id) {
     $('#tuma').text('Update');
 }
 $(document).ready(function(){
+    fetchCategories();
+    $('#exampleModal').on('hidden.bs.modal', function () {
+        const categoryId = $('#category').data('category-id');
+        if (categoryId) {
+            $('#type').val('');
+            $('#description').val('');
+            $('#category').removeData('category-id');
+            $('#tuma').text('Save');
+        }
+    });
   $('#category').on('submit',function (e) {
     e.preventDefault();
     var formData = formToJSON(this);
@@ -78,10 +136,8 @@ $(document).ready(function(){
 
     })
   })
-  $('.delete-btn').on('click', function() {
-     
-    var row = $(this).closest('tr');
-    var categoryId = row.data('id');
+  $(document).on('click', '.delete-btn', function () {
+        const categoryId = $(this).data('id');
     if (!confirm(`Are you sure you want to delete this category? ${categoryId}`)) return;
      console.log(categoryId);
     $.ajax({
@@ -98,5 +154,6 @@ $(document).ready(function(){
     });
 });
 }
+
 
 )

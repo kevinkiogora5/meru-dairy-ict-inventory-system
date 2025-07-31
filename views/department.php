@@ -48,42 +48,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Created On</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($departments)) : ?>
-                                    <?php foreach ($departments as $department) : ?>
-                                        <tr data-id="<?= $department->id ?>">
-                                            <td><?= $department->id ?></td>
-                                            <td><?= htmlspecialchars($department->name) ?></td>
-                                            <td><?= htmlspecialchars($department->description) ?></td>
-                                            <td><?= $department->created_at ?></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning" onclick="openModal(<?= $department->id ?>);">Edit</button>
-                                                <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else : ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center">No departments found.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-
-                        </table>
+                <!-- Grid.js Table Placeholder -->
+                    <div class="card-body">
+                        <div id="grid-wrapper"></div>
                     </div>
-                </div>
             </div>
         </div>
         <!-- Tooltips end -->
@@ -94,6 +62,8 @@
 </main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/scripts/base/base.js"></script>
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <script>
     var departments = <?php echo json_encode($departments) ?>;
 </script>

@@ -32,6 +32,33 @@ function openModal(id) {
     // Change the button text to indicate update
     $('#tuma').text('Update');
 }
+$(document).ready(function () {
+    // ✅ 1. Render Grid.js
+    if (typeof locations !== 'undefined' && locations.length > 0) {
+        new gridjs.Grid({
+            columns: ['ID', 'County', 'Office', 'Created On', 'Actions'],
+            data: locations.map(location => [
+                location.id,
+                location.county,
+                location.office,
+                location.created_at,
+                gridjs.html(`
+                    <button class="btn btn-sm btn-warning" onclick="openModal(${location.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${location.id}">Delete</button>
+                `)
+            ]),
+            pagination: {
+                enabled: true,
+                limit: 5,
+                summary: true
+            },
+            search: true,
+            sort: true
+        }).render(document.getElementById("grid-wrapper"));
+    } else {
+        $('#grid-wrapper').html('<p>No assignments found.</p>');
+    }
+
 $(document).ready(function(){
   $('#location').on('submit',function (e) {
     e.preventDefault();
@@ -79,10 +106,8 @@ $(document).ready(function(){
 
     })
   })
-  $('.delete-btn').on('click', function() {
-
-    var row = $(this).closest('tr');
-    var locationId = row.data('id');
+  $(document).on('click', '.delete-btn', function () {
+        const locationId = $(this).data('id');
     if (!confirm(`Are you sure you want to delete this location? ${locationId}`)) return;
     console.log(locationId);
     $.ajax({
@@ -97,6 +122,7 @@ $(document).ready(function(){
             alert(xhr.responseJSON.error);
         }
     });
+});
 });
 })
     

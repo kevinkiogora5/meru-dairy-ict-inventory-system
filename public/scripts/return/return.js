@@ -43,6 +43,34 @@ function openModal(id) {
     // Change the button text to indicate update
     $('#tuma').text('Update');
 }
+$(document).ready(function () {
+    // ✅ 1. Render Grid.js
+    if (typeof returns !== 'undefined' && returns.length > 0) {
+        new gridjs.Grid({
+            columns: ['ID', 'Employee Names', 'Returned Item', 'Return Condition', 'Return Date', 'Comments', 'Actions'],
+            data: returns.map(returnItem => [
+                returnItem.id,
+                returnItem.employee_email,
+                returnItem.inventory_item_name,
+                returnItem.returned_condition,
+                returnItem.return_date,
+                returnItem.comments,
+                gridjs.html(`
+                    <button class="btn btn-sm btn-warning" onclick="openModal(${returnItem.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${returnItem.id}">Delete</button>
+                `)
+            ]),
+            pagination: {
+                enabled: true,
+                limit: 5,
+                summary: true
+            },
+            search: true,
+            sort: true
+        }).render(document.getElementById("grid-wrapper"));
+    } else {
+        $('#grid-wrapper').html('<p>No returns found.</p>');
+    }
 
 $(document).ready(function () {
 
@@ -132,9 +160,8 @@ $(document).ready(function () {
     });
 
     // ❌ Delete return
-    $('.delete-btn').on('click', function () {
-        const row = $(this).closest('tr');
-        const returnId = row.data('id');
+    $(document).on('click', '.delete-btn', function () {
+        const returnId = $(this).data('id');
 
         if (!confirm(`Are you sure you want to delete this return? ID: ${returnId}`)) return;
 
@@ -152,5 +179,7 @@ $(document).ready(function () {
             }
         });
     });
+
+});
 
 });

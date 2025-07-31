@@ -66,47 +66,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>FirstName</th>
-                                    <th>LastName</th>
-                                    <th>Employee Id</th>
-                                    <th>Phone</th>
-                                    <th>Department</th>
-                                    <th>Created On</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($employees)) : ?>
-                                    <?php foreach ($employees as $employee) : ?>
-                                        <tr data-id="<?= $employee->id ?>">
-                                            <td><?= $employee->id ?></td>
-                                            <td><?= htmlspecialchars($employee->first_name) ?></td>
-                                            <td><?= htmlspecialchars($employee->last_name) ?></td>
-                                            <td><?= htmlspecialchars($employee->email) ?></td>
-                                            <td><?= htmlspecialchars($employee->phone) ?></td>
-                                            <td><?= htmlspecialchars($employee->department_name) ?></td>
-                                            <td><?= htmlspecialchars($employee->created_at) ?></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning" onclick="openModal(<?= $employee->id ?>)">Edit</button>
-                                                <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center">No employees found.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                 <!-- Grid.js Table Placeholder -->
+                    <div class="card-body">
+                        <div id="grid-wrapper"></div>
                     </div>
-                </div>
             </div>
         </div>
         <!-- Tooltips end -->
@@ -117,6 +80,8 @@
 </main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/scripts/base/base.js"></script>
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <script>
     var employees = <?php echo json_encode($employees) ?>;
 </script>

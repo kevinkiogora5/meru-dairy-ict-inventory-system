@@ -38,6 +38,37 @@ function openModal(id) {
     // Change the button text to indicate update
     $('#tuma').text('Update');
 }
+$(document).ready(function () {
+    // ✅ 1. Render Grid.js
+    if (typeof goods !== 'undefined' && goods.length > 0) {
+        new gridjs.Grid({
+            columns: ['ID', 'Name', 'Model', 'Brand', 'Status', 'Condition', 'Serial Number', 'Type', 'Posted On', 'Actions'],
+            data: goods.map(item => [
+                item.id,
+                item.name,
+                item.model,
+                item.brand,
+                item.status,
+                item.item_condition,
+                item.serial_number,
+                item.category_type,
+                item.created_at,
+                gridjs.html(`
+                    <button class="btn btn-sm btn-warning" onclick="openModal(${item.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${item.id}">Delete</button>
+                `)
+            ]),
+            pagination: {
+                enabled: true,
+                limit: 5,
+                summary: true
+            },
+            search: true,
+            sort: true
+        }).render(document.getElementById("grid-wrapper"));
+    } else {
+        $('#grid-wrapper').html('<p>No items found.</p>');
+    }
 $(document).ready(function(){
   $('#item').on('submit',function (e) {
     e.preventDefault();
@@ -87,11 +118,8 @@ $(document).ready(function(){
 
     })
   })
-  $('.delete-btn').on('click', function() {
-    // This function handles the deletion of an item
-    // It finds the closest table row, retrieves the item ID from data attributes,
-    var row = $(this).closest('tr');
-    var itemId = row.data('id');
+  $(document).on('click', '.delete-btn', function () {
+        const itemId = $(this).data('id');
     if (!confirm(`Are you sure you want to delete this item? ${itemId}`)) return;
      console.log(itemId);
     $.ajax({
@@ -106,6 +134,7 @@ $(document).ready(function(){
             alert(xhr.responseJSON.error);
         }
     });
+});
 });
 }
 

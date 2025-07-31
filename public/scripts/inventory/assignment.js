@@ -1,3 +1,5 @@
+let assignmentGrid = null;
+
 function showToast(message, success = true) {
     Toastify({
         text: message,
@@ -17,6 +19,53 @@ function showToast(message, success = true) {
     }).showToast();
 }
 
+function buildGridData(data) {
+    return data.map(assign => [
+        assign.id,
+        assign.employees_email,
+        assign.items_name,
+        assign.location_name,
+        assign.issue_date,
+        assign.notes,
+        gridjs.html(`
+            <button class="btn btn-sm btn-warning" onclick="openModal(${assign.id})">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="${assign.id}">Delete</button>
+        `)
+    ]);
+}
+
+function renderGrid() {
+    if (!assignment || assignment.length === 0) {
+        $('#grid-wrapper').html('<p class="text-center mt-3">No assignments found.</p>');
+        return;
+    }
+
+    assignmentGrid = new gridjs.Grid({
+        columns: ['ID', 'Employee Email', 'Item Name', 'Location', 'Issue Date', 'Notes', 'Actions'],
+        data: buildGridData(assignment),
+        pagination: {
+            enabled: true,
+            limit: 5,
+            summary: true
+        },
+        search: true,
+        sort: true
+    }).render(document.getElementById("grid-wrapper"));
+}
+
+function fetchAssignments() {
+    $.get('/assignment/list', function (data) {
+        assignment = data;
+        if (assignmentGrid) {
+            assignmentGrid.updateConfig({
+                data: buildGridData(assignment)
+            }).forceRender();
+        } else {
+            renderGrid();
+        }
+    });
+}
+
 function openModal(id) {
     const assigne = assignment.find((assign) => assign.id == id);
     if (!assigne) {
@@ -27,12 +76,10 @@ function openModal(id) {
     $('#exampleModal').modal('show');
     $('#assignment').data("assignment-id", id);
 
-    // Populate fields
     $('#employee_id').val(assigne.employee_id);
     $('#location_id').val(assigne.location_id);
     $('#notes').val(assigne.notes);
 
-    // Disable inventory dropdown and set selected item
     const invSelect = $('#inventory_item_id');
     invSelect.empty().append(`<option value="${assigne.inventory_item_id}">${assigne.items_name}</option>`);
     invSelect.prop('disabled', true).val(assigne.inventory_item_id);
@@ -41,7 +88,8 @@ function openModal(id) {
 }
 
 $(document).ready(function () {
-    // ⬇️ Load unassigned items when modal is opened for new assignment
+    renderGrid();
+
     $('#exampleModal').on('show.bs.modal', function () {
         const assignmentId = $('#assignment').data("assignment-id");
         const invSelect = $('#inventory_item_id');
@@ -97,6 +145,9 @@ $(document).ready(function () {
                 $('#exampleModal').modal('hide');
                 $('#assignment').removeData("assignment-id");
                 $('#tuma').text('Save');
+
+                fetchAssignments(); // 🔄 Refresh grid
+
                 showToast(response.message);
             },
             error: function (xhr) {
@@ -121,10 +172,8 @@ $(document).ready(function () {
         });
     });
 
-    $('.delete-btn').on('click', function () {
-        const row = $(this).closest('tr');
-        const assignmentId = row.data('id');
-
+    $(document).on('click', '.delete-btn', function () {
+        const assignmentId = $(this).data('id');
         if (!confirm(`Are you sure you want to delete this assignment? ${assignmentId}`)) return;
 
         $.ajax({
@@ -132,7 +181,7 @@ $(document).ready(function () {
             type: 'DELETE',
             success: function (response) {
                 showToast(response.message);
-                row.remove();
+                fetchAssignments(); // 🔄 Refresh grid
             },
             error: function (xhr) {
                 console.log(xhr);

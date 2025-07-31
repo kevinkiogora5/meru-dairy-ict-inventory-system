@@ -1,8 +1,7 @@
 <?php
-
+ 
 namespace Mcdcu\Projects\controllers\users;
 
-use Mcdcu\Projects\models\Auth\Auth;
 use Mcdcu\Projects\services\users\usersService;
 use sigawa\mvccore\Application;
 use sigawa\mvccore\AuthProvider;

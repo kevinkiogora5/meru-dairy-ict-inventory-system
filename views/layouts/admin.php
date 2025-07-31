@@ -76,6 +76,10 @@ $user =Application::$app->user;
 
     <link href="/assets/vendor/toastify/toastify.css" rel="stylesheet" type="text/css">
 
+    <!-- Grid.js CSS -->
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+
+
 </head>
 
 <body>
@@ -85,7 +89,7 @@ $user =Application::$app->user;
         <nav>
             <div class="app-logo">
                 <a class="logo d-inline-block" href="index.html">
-                    <img alt="kevo" src="../assets/logo/logo1.jpg">
+                    <img alt="kevo" src="../assets/logo/logo2.png">
                 </a>
 
                 <span class="bg-light-primary toggle-semi-nav">
@@ -327,6 +331,9 @@ $user =Application::$app->user;
     <script src="/assets/js/script.js"></script>
     <!--toastify js-->
     <script src="/assets/vendor/toastify/toastify.js"></script>
+    <!-- Grid.js JS -->
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+
 
 </body>
 

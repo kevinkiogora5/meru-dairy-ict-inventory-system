@@ -61,7 +61,7 @@ class employeesController extends Controller
 
     public function update(Request $request, Response $response, $id)
     {
-        if (!$request->isPost()) {
+        if ($request->isPost()) {
             $data = $request->getBody();
             try {
                 $item = $this->employeeService->update((int)$id, $data);

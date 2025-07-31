@@ -85,5 +85,15 @@ class InventoryCategoriesController extends Controller
         $items = $this->service->search($term, ['name', 'description', 'brand', 'serial_number']);
         return $this->render('inventory_items/index', ['items' => $items]);
     }
+    public function list(Request $request, Response $response)
+{
+    try {
+        $categories = $this->service->getAll(); // Or your own filtering logic
+
+        return $response->json($categories);
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to fetch categories.'], 500);
+    }
+}
 
 }

@@ -126,5 +126,16 @@ public function getUnassignedItems(Request $request, Response $response)
         return $response->json(['error' => $e->getMessage()], 500);
     }
 }
+public function list(Request $request, Response $response)
+{
+    try {
+        $assignments = $this->service->getAll(); // Or your own filtering logic
+
+        return $response->json($assignments);
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to fetch assignments.'], 500);
+    }
+}
+
 
 }

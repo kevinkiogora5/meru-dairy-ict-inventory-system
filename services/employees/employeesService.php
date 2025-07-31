@@ -70,6 +70,9 @@ public function getEmployeesWithAssignments(): array
             throw new ValidationException(['Item not found.']);
         }
         $items->loadData($data);
+        if (!$items->validate($id)) {
+            throw new ValidationException($items->getErrorMessages());
+        }
         if (!$items->save()) {
             throw new ValidationException($items->getErrors());
         }

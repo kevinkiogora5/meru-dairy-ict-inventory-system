@@ -53,6 +53,32 @@ function openModal(id) {
     // Change the button text to indicate update
     $('#tuma').text('Update');
 }
+$(document).ready(function () {
+    // ✅ 1. Render Grid.js
+    if (typeof departments !== 'undefined' && departments.length > 0) {
+        new gridjs.Grid({
+            columns: ['ID', 'Name', 'Description', 'Created On', 'Actions'],
+            data: departments.map(department => [
+                department.id,
+                department.name,
+                department.description,
+                department.created_at,
+                gridjs.html(`
+                    <button class="btn btn-sm btn-warning" onclick="openModal(${department.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${department.id}">Delete</button>
+                `)
+            ]),
+            pagination: {
+                enabled: true,
+                limit: 5,
+                summary: true
+            },
+            search: true,
+            sort: true
+        }).render(document.getElementById("grid-wrapper"));
+    } else {
+        $('#grid-wrapper').html('<p>No employee found.</p>');
+    }
 
 
 $(document).ready(function () {
@@ -87,9 +113,8 @@ $(document).ready(function () {
 });
 
     // Handle delete button click
-    $('.delete-btn').on('click', function () {
-        var row = $(this).closest('tr');
-        var departmentId = row.data('id');
+$(document).on('click', '.delete-btn', function () {
+        const departmentId = $(this).data('id');
 
         if (!confirm(`Are you sure you want to delete this department? ${departmentId}`)) return;
 
@@ -108,4 +133,5 @@ $(document).ready(function () {
             }
         });
     });
+});
 });
