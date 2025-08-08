@@ -9,7 +9,7 @@
                         <div class="form-container">
                             <div class="signup-content mt-4 text-center">
                                 <span>
-                                    <img alt="Mount Kenya Milk Logo" class="img-fluid" src="../assets/logo/logo.png">
+                                    <img alt="Mount Kenya Milk Logo" class="img-fluid" src="../assets/logo/logo2.png">
                                 </span>
                             </div>
 

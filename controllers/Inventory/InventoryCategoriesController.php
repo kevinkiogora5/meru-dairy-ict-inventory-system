@@ -78,13 +78,6 @@ class InventoryCategoriesController extends Controller
     }
      return $response->json(['error' => 'Invalid request method.'],400);
     }
-
-    public function search(Request $request)
-    {
-        $term = $request->getParam('term');
-        $items = $this->service->search($term, ['name', 'description', 'brand', 'serial_number']);
-        return $this->render('inventory_items/index', ['items' => $items]);
-    }
     public function list(Request $request, Response $response)
 {
     try {

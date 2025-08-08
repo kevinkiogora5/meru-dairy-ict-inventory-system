@@ -238,16 +238,6 @@ $user =Application::$app->user;
                                         </div>
 
                                     </li>
-                                    <!-- Search Form -->
-<li class="header-search me-3">
-    <form class="d-flex" action="/search" method="get">
-        <input class="form-control form-control-sm me-2" type="search" name="q" placeholder="Search..." aria-label="Search">
-        <button class="btn btn-outline-primary btn-sm" type="submit">
-            <i class="ti ti-search text-dark"></i>
-        </button>
-    </form>
-</li>
-
 <!-- User Info -->
 <li class="header-profile d-flex align-items-center gap-3">
     <div class="d-flex flex-column text-end">

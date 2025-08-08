@@ -79,18 +79,64 @@ class returnService
     return $items;
 }
 
-    public function update(int $id, array $data) : ?returns
-    {
-        $items = returns::findOne(['id' => $id]);
-        if(!$items){
-            throw new ValidationException(['Item not found.']);
-        }
-        $items->loadData($data);
-        if (!$items->save()) {
-            throw new ValidationException($items->getErrors());
-        }
-        return $items;
+  // In returnService.php
+
+public function update(int $id, array $data): ?returns
+{
+    // 1. Find the existing return record.
+    $items = returns::findOne(['id' => $id]);
+    if (!$items) {
+        throw new ValidationException(['Return record not found.']);
     }
+
+    // 2. Store the original inventory assignment ID before loading new data.
+    $oldInventoryAssignmentId = $items->inventory_assignment_id;
+
+    // 3. Load the new data from the request.
+    $items->loadData($data);
+
+    // 4. Validate and save the updated return record.
+    if (!$items->validate() || !$items->save()) {
+        throw new ValidationException($items->getErrorMessages());
+    }
+
+    // 5. Check if the inventory assignment ID has changed.
+    if ($oldInventoryAssignmentId !== $items->inventory_assignment_id) {
+        // --- Logic for the OLD assignment ---
+        // Find the old assignment and "activate" it again.
+        $oldAssignment = InventoryAssignment::findOne(['id' => $oldInventoryAssignmentId]);
+        if ($oldAssignment) {
+            // Un-delete the old assignment to make it "active" again.
+            $oldAssignment->deleted_at = null;
+            $oldAssignment->save();
+
+            // Find the old item and change its status back to 'Assigned'.
+            $oldItem = InventoryItem::findOne(['id' => $oldAssignment->inventory_item_id]);
+            if ($oldItem) {
+                $oldItem->status = 'Assigned';
+                $oldItem->save();
+            }
+        }
+
+        // --- Logic for the NEW assignment ---
+        // Find the new assignment and "deactivate" it.
+        $newAssignment = InventoryAssignment::findOne(['id' => $items->inventory_assignment_id]);
+        if ($newAssignment) {
+            // Delete the new assignment to mark the item as returned.
+            $newAssignment->deleted_at = date('Y-m-d H:i:s');
+            $newAssignment->save();
+
+            // Find the new item and mark its status as 'Available'.
+            $newItem = InventoryItem::findOne(['id' => $newAssignment->inventory_item_id]);
+            if ($newItem) {
+                $newItem->status = 'Available';
+                $newItem->save();
+            }
+        }
+    }
+    
+    return $items;
+}
 
     public function delete(int $id): bool
     {
@@ -100,10 +146,5 @@ class returnService
         }
         $items->deleted_at = date('Y-m-d H:i:s');
         return $items->save();
-    }
-
-    public function search(string $term, array $columns, ?int $limit = null): array
-    {
-        return returns::search($term, $columns, $limit);
     }
 }

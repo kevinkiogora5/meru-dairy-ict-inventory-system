@@ -83,12 +83,16 @@ class InventoryItemController extends Controller
     }
      return $response->json(['error' => 'Invalid request method.'],400);
     }
+    public function list(Request $request, Response $response)
+{
+    try {
+        $items = $this->service->getAll(); // Or your own filtering logic
 
-    public function search(Request $request)
-    {
-        $term = $request->getParam('term');
-        $items = $this->service->search($term, ['name', 'description', 'brand', 'serial_number']);
-        return $this->render('inventory_items/index', ['items' => $items]);
+        return $response->json($items);
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to fetch items.'], 500);
     }
+}
+
 
 }

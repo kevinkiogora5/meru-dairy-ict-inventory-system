@@ -66,14 +66,14 @@ class returnController extends Controller
     }
     $data['received_by'] = $user->id;
     $employeeId = $data['employee_id'] ?? null;
-$itemId = $data['inventory_item_id'] ?? null;
+$assignmentId = $data['inventory_assignment_id'] ?? null;
 
-if (!$employeeId || !$itemId) {
-    throw new ValidationException(['employee_id or inventory_item_id missing']);
+if (!$employeeId || !$assignmentId) {
+    throw new ValidationException(['employee_id or inventory_assignment_id missing']);
 }
 
 // Find the assignment that matches both
-$assignment = $this->inventoryService->findAssignment($employeeId, $itemId);
+$assignment = $this->inventoryService->findAssignment($employeeId, $assignmentId);
 if (!$assignment) {
     throw new ValidationException(['No assignment found for this employee and item.']);
 }
@@ -97,7 +97,7 @@ $data['inventory_assignment_id'] = $assignment->id;
             $data = $request->getBody();
             try {
                 $item = $this->service->update((int)$id, $data);
-                return $response->json(['message' => 'item updated successfully.', 'data' => $item]);
+                return $response->json(['message' => 'return updated successfully.', 'data' => $item]);
             } catch (ValidationException $th) {
                 return $response->json(['error' => $th->errors], 400);
             }
@@ -118,10 +118,14 @@ $data['inventory_assignment_id'] = $assignment->id;
      return $response->json(['error' => 'Invalid request method.'],400);
     }
 
-    public function search(Request $request)
-    {
-        $term = $request->getParam('term');
-        $items = $this->service->search($term, ['name', 'description', 'brand', 'serial_number']);
-        return $this->render('inventory_items/index', ['items' => $items]);
+    public function list(Request $request, Response $response)
+{
+    try {
+        $returns = $this->service->getAll(); // Or your own filtering logic
+
+        return $response->json($returns);
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to fetch returns.'], 500);
     }
+}
 }

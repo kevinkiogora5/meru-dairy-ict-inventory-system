@@ -6,5 +6,6 @@ $router->post('/return/create', [ReturnController::class, 'create']);
 $router->get('/return/update/{id}', [ReturnController::class, 'update']);
 $router->post('/return/update/{id}', [ReturnController::class, 'update']);
 $router->delete('/return/delete/{id}', [ReturnController::class, 'delete']);
-$router->get('/return/assignments-by-employee', [returnController::class, 'getAssignmentsByEmployee']);
-$router->get('/return/search', [ReturnController::class, 'search']);
+$router->get('/return/assignments-by-employee', [ReturnController::class, 'getAssignmentsByEmployee']);
+$router->get('/return/available-items-by-employee', [ReturnController::class, 'getAssignmentsByEmployee']);
+$router->get('/return/list', [ReturnController::class, 'list']);

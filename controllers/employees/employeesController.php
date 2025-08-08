@@ -85,12 +85,15 @@ class employeesController extends Controller
     }
      return $response->json(['error' => 'Invalid request method.'],400);
     }
+    public function list(Request $request, Response $response)
+{
+    try {
+        $employees = $this->employeeService->getAll(); // Or your own filtering logic
 
-    public function search(Request $request)
-    {
-        $term = $request->getParam('term');
-        $items = $this->employeeService->search($term, ['name', 'description', 'brand', 'serial_number']);
-        return $this->render('inventory_items/index', ['items' => $items]);
+        return $response->json($employees);
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to fetch employees.'], 500);
     }
+}
 
 }

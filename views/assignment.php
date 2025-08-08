@@ -2,22 +2,20 @@
     <div class="container-fluid">
 
         <!-- Page Heading -->
-        <div class="row m-1">
-            <div class="col-12">
+        <div class="row m-4">
+            <div class="col-md-6">
                 <h4 class="main-title">Manage Inventory_Assignment</h4>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal">Add Assignment</button>
             </div>
         </div>
 
         <!-- Main Card -->
         <div class="row">
             <div class="col-12">
-                <div class="card p-3">
-
-                    <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        Assign Inventory
-                    </button>
-
+                
                     <!-- Modal Form -->
                     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
@@ -66,11 +64,7 @@
                     </div>
 
                     <!-- Grid.js Table Placeholder -->
-                    <div class="card-body">
                         <div id="grid-wrapper"></div>
-                    </div>
-
-                </div>
             </div>
         </div>
     </div>

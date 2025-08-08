@@ -26,7 +26,7 @@ class department extends DbModel
     ]; }
     public function labels(): array { return []; }
     public function rules() { return [
-        'name' => [self::RULE_REQUIRED],
+        'name' => [self::RULE_REQUIRED, [self::RULE_UNIQUE,'class'=>self::class]],
         'description' => [self::RULE_REQUIRED],
         'created_by' => [self::RULE_REQUIRED, self::RULE_INTEGER],
     ]; 

@@ -31,7 +31,7 @@ $(document).ready(function () {
                 setTimeout(function () {
                     submit.html("Login").prop('disabled', false);
                     $('#user')[0].reset();
-                    window.location.href = '/department';
+                    window.location.href = '/dashboard';
                 }, 1500);
             },
             error: function (xhr) {

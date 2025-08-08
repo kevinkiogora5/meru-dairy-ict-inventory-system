@@ -32,7 +32,7 @@ class departmentController extends Controller
 
    public function create(Request $request, Response $response)
     {
-        if (!$request->isPost()) {
+        if ($request->isPost()) {
             $data = $request->getBody();
             try { 
                  $user = Application::$app->user;
@@ -55,7 +55,7 @@ class departmentController extends Controller
     public function update(Request $request, Response $response, $id)
 {
     // Accept both PUT or POST for flexibility
-    if (!$request->isPost()) {
+    if ($request->isPost()) {
         $data = $request->getBody();
         try {
             $item = $this->departmentService->update((int)$id, $data);
@@ -77,7 +77,7 @@ class departmentController extends Controller
 
    public function delete(Request $request, Response $response, $id)
 {
-    if (!$request->isDelete()) {
+    if ($request->isDelete()) {
         try {
             $deleted = $this->departmentService->delete((int)$id);
 
@@ -93,13 +93,16 @@ class departmentController extends Controller
 
     return $response->json(['error' => 'Invalid request method.'], 400);
 }
+    public function list(Request $request, Response $response)
+{
+    try {
+        $department = $this->departmentService->getAll(); // Or your own filtering logic
 
-    public function search(Request $request)
-    {
-        $term = $request->getParam('term');
-        $items = $this->departmentService->search($term, ['name', 'description', 'brand', 'serial_number']);
-        return $this->render('inventory_items/index', ['items' => $items]);
+        return $response->json($department);
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to fetch departments.'], 500);
     }
+}
 
 
 }

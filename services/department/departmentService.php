@@ -64,10 +64,4 @@ class departmentService
     $item->deleted_at = date('Y-m-d H:i:s');
     return $item->save(); // ✅ Persist the soft-deleted status
 }
-
-
-    public function search(string $term, array $columns, ?int $limit = null): array
-    {
-        return department::search($term, $columns, $limit);
-    }
 }

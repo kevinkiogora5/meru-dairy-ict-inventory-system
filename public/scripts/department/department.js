@@ -1,3 +1,6 @@
+
+let departmentGrid = null;
+
 function showToast(message, success = true) {
     Toastify({
         text: message,
@@ -7,7 +10,7 @@ function showToast(message, success = true) {
         position: "center",
         stopOnFocus: true,
         style: {
-            background: success ? "#22c55e" : "#ef4444", // green for success, red for error
+            background: success ? "#22c55e" : "#ef4444",
             position: "fixed",
             top: "50%",
             left: "50%",
@@ -20,16 +23,12 @@ function showToast(message, success = true) {
 function parseErrorMessage(xhr) {
     let errormessage = 'An unexpected error occurred';
 
-    if (xhr.responseJSON && xhr.responseJSON.error) {
+    if (xhr.responseJSON?.error) {
         errormessage = xhr.responseJSON.error;
     } else if (xhr.responseText) {
         try {
             const parsed = JSON.parse(xhr.responseText);
-            if (parsed && parsed.error) {
-                errormessage = parsed.error;
-            } else {
-                errormessage = xhr.responseText;
-            }
+            errormessage = parsed?.error || xhr.responseText;
         } catch (e) {
             errormessage = xhr.responseText;
         }
@@ -37,85 +36,111 @@ function parseErrorMessage(xhr) {
 
     return errormessage;
 }
-function openModal(id) {
-    var section = departments.find((dept) => dept.id == id);
 
-    // Show modal
-    $('#exampleModal').modal('show');
-
-    // Store the ID on the form for later use (in update)
-    $('#department').data("section-id", id);
-
-    // Fill in form fields
-    $('#name').val(section.name);
-    $('#description').val(section.description);
-
-    // Change the button text to indicate update
-    $('#tuma').text('Update');
+function buildGridData(data) {
+    return data.map(department => [
+        department.id,
+        department.name,
+        department.description,
+        department.created_at,
+        gridjs.html(`
+            <button class="btn btn-sm btn-warning" onclick="openModal(${department.id})">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="${department.id}">Delete</button>
+        `)
+    ]);
 }
-$(document).ready(function () {
-    // ✅ 1. Render Grid.js
-    if (typeof departments !== 'undefined' && departments.length > 0) {
-        new gridjs.Grid({
-            columns: ['ID', 'Name', 'Description', 'Created On', 'Actions'],
-            data: departments.map(department => [
-                department.id,
-                department.name,
-                department.description,
-                department.created_at,
-                gridjs.html(`
-                    <button class="btn btn-sm btn-warning" onclick="openModal(${department.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger delete-btn" data-id="${department.id}">Delete</button>
-                `)
-            ]),
-            pagination: {
-                enabled: true,
-                limit: 5,
-                summary: true
-            },
-            search: true,
-            sort: true
-        }).render(document.getElementById("grid-wrapper"));
-    } else {
-        $('#grid-wrapper').html('<p>No employee found.</p>');
+
+function renderGrid() {
+    if (!departments || departments.length === 0) {
+        $('#grid-wrapper').html('<p class="text-center mt-3">No departments found.</p>');
+        return;
     }
 
-
-$(document).ready(function () {
-    // Handle form submission (create department)
-    $('#department').on('submit', function (e) {
-    e.preventDefault();
-    var formData = formToJSON(this);
-    var sectionId = $('#department').data('section-id'); // ✅ Get from form
-    var url = sectionId ? `/department/update/${sectionId}` : "/department/create";
-    var sub = $('#tuma');
-    sub.html("Submitting...").prop('disabled', true);
-
-    $.ajax({
-        type: "POST",
-        url: url,
-        data: JSON.stringify(formData),
-        contentType: 'application/json',
-        success: function (response) {
-            sub.html("Save").prop('disabled', false);
-            $('#department')[0].reset();
-            $('#department').removeData("product-id"); // ✅ Reset to create mode
-            $('#submitBtn').text('Save'); // Optional: reset button label
-            showToast(response.message);
+    const gridData = buildGridData(departments);
+    departmentGrid = new gridjs.Grid({
+        columns: ['ID', 'Name', 'Description', 'Created On', 'Actions'],
+        data: gridData,
+        pagination: {
+            enabled: true,
+            limit: 5,
+            summary: true
         },
-        error: function (xhr) {
-            console.log(xhr);
-            sub.html("Save").prop('disabled', false);
-            const errormessage = parseErrorMessage(xhr);
-            showToast(errormessage, false);
+        search: true,
+        sort: true
+    }).render(document.getElementById("grid-wrapper"));
+}
+
+function fetchDepartments() {
+    $.get('/department/list', function (data) {
+        departments = data;
+        if (departmentGrid) {
+            departmentGrid.updateConfig({
+                data: buildGridData(departments)
+            }).forceRender();
+        } else {
+            renderGrid();
         }
     });
-});
+}
 
-    // Handle delete button click
-$(document).on('click', '.delete-btn', function () {
+function openModal(id) {
+    const section = departments.find((dept) => dept.id == id);
+    if (!section) {
+        showToast('Department not found', false);
+        return;
+    }
+
+    $('#exampleModal').modal('show');
+    $('#department').data("section-id", id);
+
+    $('#name').val(section.name);
+    $('#description').val(section.description);
+    $('#tuma').text('Update');
+}
+
+$(document).ready(function () {
+    fetchDepartments();
+
+    $('#exampleModal').on('hidden.bs.modal', function () {
+        $('#department')[0].reset();
+        $('#department').removeData('section-id');
+        $('#tuma').text('Save');
+    });
+
+    $('#department').on('submit', function (e) {
+        e.preventDefault();
+        const formData = formToJSON(this);
+        const sectionId = $('#department').data('section-id');
+        const url = sectionId ? `/department/update/${sectionId}` : "/department/create";
+        const sub = $('#tuma');
+        const originalText = sub.text();
+
+        sub.html("Submitting...").prop('disabled', true);
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            success: function (response) {
+                sub.html(originalText).prop('disabled', false);
+                $('#department')[0].reset();
+                $('#exampleModal').modal('hide');
+                $('#department').removeData('section-id');
+                $('#tuma').text('Save');
+                fetchDepartments();
+                showToast(response.message);
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                sub.html(originalText).prop('disabled', false);
+                showToast(parseErrorMessage(xhr), false);
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-btn', function () {
         const departmentId = $(this).data('id');
-
         if (!confirm(`Are you sure you want to delete this department? ${departmentId}`)) return;
 
         $.ajax({
@@ -123,15 +148,13 @@ $(document).on('click', '.delete-btn', function () {
             type: 'DELETE',
             dataType: 'json',
             success: function (response) {
-                showToast(response.message); // ✅ show success toast
-                row.remove();
+                showToast(response.message);
+                fetchDepartments();
             },
             error: function (xhr) {
                 console.log(xhr);
-                const errormessage = parseErrorMessage(xhr);
-                showToast(errormessage, false); // ✅ show error toast
+                showToast(parseErrorMessage(xhr), false);
             }
         });
     });
-});
 });

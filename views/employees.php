@@ -2,9 +2,15 @@
     <div class="container-fluid">
 
         <!-- Breadcrumb start -->
-        <div class="row m-1">
-            <div class="col-12 ">
+        <div class="row m-4">
+            <div class="col-md-6">
                 <h4 class="main-title">Manage Employees</h4>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal">
+                    Add Employees
+                </button>
             </div>
         </div>
         <!-- Breadcrumb end -->
@@ -14,12 +20,6 @@
             <!-- Tooltips start -->
             <div class="col-12">
                 <div class="card">
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#exampleModal">
-                            Add Employees
-                        </button>
-
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
@@ -57,8 +57,10 @@
         <?php endforeach; ?>
     </select>
 </div>
+<div class="col-12 text-end">
 
                                             <button type="submit" id="tuma" class="btn btn-primary">Save</button>
+                                            </div>
                                         </form>
                                     </div>
                                 </div>
@@ -75,14 +77,9 @@
         <!-- Tooltips end -->
     </div>
     <!-- Form Validation end -->
-
-    </div>
 </main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/scripts/base/base.js"></script>
 <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
-<script>
-    var employees = <?php echo json_encode($employees) ?>;
-</script>
 <script src="/scripts/employee/employee.js"></script>

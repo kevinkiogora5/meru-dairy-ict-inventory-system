@@ -2,9 +2,15 @@
     <div class="container-fluid">
 
         <!-- Breadcrumb start -->
-        <div class="row m-1">
-            <div class="col-12 ">
+        <div class="row m-4">
+            <div class="col-md-6">
                 <h4 class="main-title">Manage Inventory Items</h4>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal">
+                    Add Items
+                </button>
             </div>
         </div>
         <!-- Breadcrumb end -->
@@ -14,12 +20,6 @@
             <!-- Tooltips start -->
             <div class="col-12">
                 <div class="card">
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#exampleModal">
-                            Add Items
-                        </button>
-
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
@@ -74,13 +74,11 @@
                     <div class="card-body">
                         <div id="grid-wrapper"></div>
                     </div>
-            </div>
+
         </div>
         <!-- Tooltips end -->
     </div>
     <!-- Form Validation end -->
-
-    </div>
 </main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/scripts/base/base.js"></script>

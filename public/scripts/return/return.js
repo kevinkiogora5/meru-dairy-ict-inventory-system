@@ -1,3 +1,7 @@
+let returns = [];
+let returnGrid = null;
+
+// Helper function to handle Toast messages
 function showToast(message, success = true) {
     Toastify({
         text: message,
@@ -7,7 +11,7 @@ function showToast(message, success = true) {
         position: "center",
         stopOnFocus: true,
         style: {
-            background: success ? "#22c55e" : "#ef4444", // green for success, red for error
+            background: success ? "#22c55e" : "#ef4444",
             position: "fixed",
             top: "50%",
             left: "50%",
@@ -17,49 +21,52 @@ function showToast(message, success = true) {
     }).showToast();
 }
 
-function openModal(id) {
-    var returnItem = returns.find((retn) => retn.id == id);
+// Helper function to parse error messages from AJAX responses
+function parseErrorMessage(xhr) {
+    let errorMessage = 'An unexpected error occurred';
+    if (xhr.responseJSON?.error) {
+        errorMessage = xhr.responseJSON.error;
+    } else if (xhr.responseText) {
+        try {
+            const parsed = JSON.parse(xhr.responseText);
+            errorMessage = parsed?.error || xhr.responseText;
+        } catch {
+            errorMessage = xhr.responseText;
+        }
+    }
+    return errorMessage;
+}
 
-    if (!returnItem) {
-        showToast("Return not found", false);
+// Helper function to build data for the GridJS table
+function buildGridData(data) {
+    return data.map(returnItem => [
+        returnItem.id,
+        returnItem.employee_email,
+        returnItem.inventory_item_name,
+        returnItem.returned_condition,
+        returnItem.return_date,
+        returnItem.comments,
+        gridjs.html(`
+            <button class="btn btn-sm btn-warning" onclick="openModal(${returnItem.id})">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="${returnItem.id}">Delete</button>
+        `)
+    ]);
+}
+
+// Function to render or update the GridJS table
+function renderGrid() {
+    if (!returns || returns.length === 0) {
+        $('#grid-wrapper').html('<p class="text-center mt-3">No returns found.</p>');
         return;
     }
 
-    // Show modal
-    $('#exampleModal').modal('show');
-
-    // Store the ID on the form for later use (in update)
-    $('#return').data("return-id", id);
-
-    // Fill in form fields
-    $('#employee_id').val(returnItem.employee_id).trigger('change'); // trigger change to load items
-    setTimeout(() => {
-        $('#inventory_item_id').val(returnItem.inventory_item_id);
-    }, 200); // delay to ensure items load before selection
-
-    $('#returned').val(returnItem.returned_condition);
-    $('#comment').val(returnItem.comments);
-
-    // Change the button text to indicate update
-    $('#tuma').text('Update');
-}
-$(document).ready(function () {
-    // ✅ 1. Render Grid.js
-    if (typeof returns !== 'undefined' && returns.length > 0) {
-        new gridjs.Grid({
-            columns: ['ID', 'Employee Names', 'Returned Item', 'Return Condition', 'Return Date', 'Comments', 'Actions'],
-            data: returns.map(returnItem => [
-                returnItem.id,
-                returnItem.employee_email,
-                returnItem.inventory_item_name,
-                returnItem.returned_condition,
-                returnItem.return_date,
-                returnItem.comments,
-                gridjs.html(`
-                    <button class="btn btn-sm btn-warning" onclick="openModal(${returnItem.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger delete-btn" data-id="${returnItem.id}">Delete</button>
-                `)
-            ]),
+    const gridData = buildGridData(returns);
+    if (returnGrid) {
+        returnGrid.updateConfig({ data: gridData }).forceRender();
+    } else {
+        returnGrid = new gridjs.Grid({
+            columns: ['ID', 'Employee', 'Returned Item', 'Condition', 'Date', 'Comments', 'Actions'],
+            data: gridData,
             pagination: {
                 enabled: true,
                 limit: 5,
@@ -68,101 +75,169 @@ $(document).ready(function () {
             search: true,
             sort: true
         }).render(document.getElementById("grid-wrapper"));
+    }
+}
+
+// Function to fetch all return records
+function fetchReturns() {
+    $.get('/return/list', function (data) {
+        returns = data;
+        renderGrid();
+    }).fail(function(xhr) {
+        showToast('Failed to fetch returns.', false);
+        console.error('Error fetching returns:', xhr);
+    });
+}
+
+/**
+ * Main function to open the modal.
+ * If an ID is passed, it's an update; otherwise, it's a new creation.
+ */
+function openModal(id = null) {
+    $('#return')[0].reset();
+    $('#return').removeData('return-id');
+    $('#tuma').text('Send');
+    $('#inventory_item_id').empty().append('<option value="">Select employee first</option>').prop('disabled', true);
+    
+    if (id) {
+        const returnItem = returns.find((r) => r.id == id);
+        if (!returnItem) {
+            showToast("Return not found", false);
+            return;
+        }
+        $('#return').data("return-id", id);
+        $('#tuma').text('Update');
+        $('#employee_id').val(returnItem.employee_id);
+        
+        // Pass the selected ID to the change handler
+        $('#employee_id').trigger('change', [returnItem.inventory_assignment_id]);
+        
+        $('#returned').val(returnItem.returned_condition);
+        $('#comment').val(returnItem.comments);
     } else {
-        $('#grid-wrapper').html('<p>No returns found.</p>');
+        $('#tuma').text('Send');
     }
 
+    $('#exampleModal').modal('show');
+}
+
+/**
+ * Populates the dropdown based on the API endpoint and mode.
+ * @param {string} url - The API endpoint to fetch data from.
+ * @param {string|number} [selectedId] - The ID of the item to pre-select.
+ */
+function populateDropdown(url, selectedId) {
+    const inventorySelect = $('#inventory_item_id');
+    inventorySelect.empty().prop('disabled', true).append('<option>Loading...</option>');
+
+    $.ajax({
+        url: url,
+        method: 'GET',
+        success: function (data) {
+            inventorySelect.empty();
+            if (data.length === 0) {
+                inventorySelect.append('<option value="">No items found</option>');
+            } else {
+                inventorySelect.append('<option value="">Select an item</option>');
+                data.forEach(a => {
+                    inventorySelect.append(`<option value="${a.id}">${a.name} (${a.serial_number})</option>`);
+                });
+            }
+            inventorySelect.prop('disabled', false);
+
+            if (selectedId) {
+                inventorySelect.val(selectedId);
+            }
+        },
+        error: function (xhr) {
+            showToast(parseErrorMessage(xhr), false);
+            console.error(xhr);
+            inventorySelect.empty().append('<option value="">Failed to load items</option>').prop('disabled', false);
+        }
+    });
+}
+
 $(document).ready(function () {
+    fetchReturns();
 
-    // 🔄 When employee is selected, load assigned items
-    $('#employee_id').on('change', function () {
+    $('#newReturnButton').on('click', function() {
+        openModal();
+    });
+
+    $('#exampleModal').on('hidden.bs.modal', function () {
+        $('#return')[0].reset();
+        $('#return').removeData('return-id');
+        $('#tuma').text('Send');
+        $('#inventory_item_id').empty().append('<option value="">Select employee first</option>').prop('disabled', true);
+    });
+
+    // The logic is now the same for create and update
+    // We always fetch assigned items for a return
+    $('#employee_id').on('change', function (event, preselectedId = null) {
         const employeeId = $(this).val();
-        const inventorySelect = $('#inventory_item_id');
-
-        inventorySelect.empty().prop('disabled', true).append('<option value="">Loading...</option>');
-
+        
         if (!employeeId) {
-            inventorySelect.html('<option value="">Select employee first</option>');
+            $('#inventory_item_id').html('<option value="">Select employee first</option>').prop('disabled', true);
+            return;
+        }
+        
+        const apiUrl = `/return/assignments-by-employee?employee_id=${employeeId}`;
+        
+        populateDropdown(apiUrl, preselectedId);
+    });
+
+    $('#return').on('submit', function (e) {
+        e.preventDefault();
+        const returnId = $('#return').data('return-id');
+        const formData = formToJSON(this);
+
+        const selectedValue = formData.inventory_assignment_id;
+
+        if (!selectedValue) {
+            showToast("Please select an item to return.", false);
             return;
         }
 
-        $.ajax({
-            url: `/return/assignments-by-employee?employee_id=${employeeId}`,
-            method: 'GET',
-            success: function (assignments) {
-                inventorySelect.empty();
+        let url = '';
+        let finalData = {};
+        
+        if (returnId) {
+            finalData = { ...formData, inventory_assignment_id: selectedValue };
+            delete finalData.inventory_item_id;
+            url = `/return/update/${returnId}`;
+        } else {
+            finalData = { ...formData, inventory_assignment_id: selectedValue };
+            delete finalData.inventory_item_id;
+            url = '/return/create';
+        }
 
-                if (assignments.length === 0) {
-                    inventorySelect.append('<option value="">No items assigned</option>');
-                } else {
-                    inventorySelect.append('<option value="">Select an item</option>');
-                    assignments.forEach(a => {
-                        inventorySelect.append(`<option value="${a.item_id}">${a.name} (${a.serial_number})</option>`);
-                    });
-                }
-
-                inventorySelect.prop('disabled', false);
-            },
-            error: function (xhr) {
-                inventorySelect.empty().append('<option value="">Failed to load item</option>');
-                showToast('Could not load assigned items', false);
-                console.error(xhr);
-            }
-        });
-    });
-
-    // ✅ Form submission
-    $('#return').on('submit', function (e) {
-        e.preventDefault();
-
-        const formData = formToJSON(this);
-        const returnId = $('#return').data('return-id');
-        const url = returnId ? `/return/update/${returnId}` : "/return/create";
         const sub = $('#tuma');
         const originalText = sub.text();
 
-        sub.html("Submitting...").prop('disabled', true);
+        sub.html('Submitting...').prop('disabled', true);
 
         $.ajax({
             type: "POST",
             url: url,
-            data: JSON.stringify(formData),
+            data: JSON.stringify(finalData),
             contentType: 'application/json',
             success: function (response) {
                 sub.html(originalText).prop('disabled', false);
-                $('#return')[0].reset();
-                $('#inventory_item_id').empty().append('<option value="">Select employee first</option>').prop('disabled', true);
                 $('#exampleModal').modal('hide');
-                $('#return').removeData("return-id");
-                $('#tuma').text('Send'); // Reset button
+                fetchReturns();
                 showToast(response.message);
             },
             error: function (xhr) {
-                console.log(xhr);
+                console.error(xhr);
                 sub.html(originalText).prop('disabled', false);
-
-                let errorMessage = 'An unexpected error occurred';
-
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage = xhr.responseJSON.error;
-                } else if (xhr.responseText) {
-                    try {
-                        const parsed = JSON.parse(xhr.responseText);
-                        errorMessage = parsed.error || xhr.responseText;
-                    } catch {
-                        errorMessage = xhr.responseText;
-                    }
-                }
-
-                showToast(errorMessage, false);
+                showToast(parseErrorMessage(xhr), false);
             }
         });
     });
 
-    // ❌ Delete return
+    // Delete return
     $(document).on('click', '.delete-btn', function () {
         const returnId = $(this).data('id');
-
         if (!confirm(`Are you sure you want to delete this return? ID: ${returnId}`)) return;
 
         $.ajax({
@@ -170,16 +245,21 @@ $(document).ready(function () {
             type: 'DELETE',
             success: function (response) {
                 showToast(response.message);
-                row.remove();
+                fetchReturns();
             },
             error: function (xhr) {
-                console.log(xhr);
-                const error = xhr.responseJSON?.error || 'Delete failed.';
-                showToast(error, false);
+                console.error(xhr);
+                showToast(parseErrorMessage(xhr), false);
             }
         });
     });
-
 });
 
-});
+// A simple helper to convert form data to a JSON object
+function formToJSON(form) {
+    const data = {};
+    $(form).serializeArray().forEach(field => {
+        data[field.name] = field.value;
+    });
+    return data;
+}

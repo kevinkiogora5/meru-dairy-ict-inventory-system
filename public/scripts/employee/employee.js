@@ -1,13 +1,16 @@
-function showToast(message, success =true){
+let employees = [];
+let employeeGrid = null;
+
+function showToast(message, success = true) {
     Toastify({
-         text: message,
+        text: message,
         duration: 3000,
         close: true,
         gravity: "top",
         position: "center",
         stopOnFocus: true,
         style: {
-            background: success ? "#22c55e" : "#ef4444", // green for success, red for error
+            background: success ? "#22c55e" : "#ef4444",
             position: "fixed",
             top: "50%",
             left: "50%",
@@ -16,120 +19,157 @@ function showToast(message, success =true){
         }
     }).showToast();
 }
+
+function formToJSON(form) {
+    const formData = new FormData(form);
+    const object = {};
+    formData.forEach((value, key) => {
+        object[key] = value;
+    });
+    return object;
+}
+
 function openModal(id) {
-    var employee = employees.find((emp) => emp.id == id);
+    const employee = employees.find((emp) => emp.id == id);
+    if (!employee) {
+        showToast('Employee not found', false);
+        return;
+    }
 
-    // Show modal
     $('#exampleModal').modal('show');
-
-    // Store the ID on the form for later use (in update)
     $('#employee').data("employee-id", id);
 
-    // Fill in form fields
     $('#first_name').val(employee.first_name);
     $('#last_name').val(employee.last_name);
     $('#email').val(employee.email);
     $('#phone').val(employee.phone);
     $('#department_id').val(employee.department_id);
 
-    // Change the button text to indicate update
     $('#tuma').text('Update');
 }
-$(document).ready(function () {
-    // ✅ 1. Render Grid.js
-    if (typeof employees !== 'undefined' && employees.length > 0) {
-        new gridjs.Grid({
-            columns: ['ID', 'First Name', 'Last Name', 'Employee Id', 'Phone', 'Department', 'Created On', 'Actions'],
-            data: employees.map(employee => [
-                employee.id,
-                employee.first_name,
-                employee.last_name,
-                employee.email,
-                employee.phone,
-                employee.department_name,
-                employee.created_at,
-                gridjs.html(`
-                    <button class="btn btn-sm btn-warning" onclick="openModal(${employee.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger delete-btn" data-id="${employee.id}">Delete</button>
-                `)
-            ]),
-            pagination: {
-                enabled: true,
-                limit: 5,
-                summary: true
-            },
-            search: true,
-            sort: true
-        }).render(document.getElementById("grid-wrapper"));
-    } else {
-        $('#grid-wrapper').html('<p>No employee found.</p>');
+
+function buildGridData(data) {
+    return data.map(employee => [
+        employee.id,
+        employee.first_name,
+        employee.last_name,
+        employee.email,
+        employee.phone,
+        employee.department_name,
+        employee.created_at,
+        gridjs.html(`
+            <button class="btn btn-sm btn-warning" onclick="openModal(${employee.id})">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="${employee.id}">Delete</button>
+        `)
+    ]);
+}
+
+function renderGrid() {
+    if (!employees || employees.length === 0) {
+        $('#grid-wrapper').html('<p class="text-center mt-3">No employees found.</p>');
+        return;
     }
 
-$(document).ready(function(){
-  $('#employee').on('submit',function (e) {
-    e.preventDefault();
-    var formData = formToJSON(this);
-    var employeeId = $('#employee').data('employee-id');
-    var url = employeeId ? `/employee/update/${employeeId}` : "/employee/create";
-    var sub = $('#tuma');
-    sub.html("submitting...").prop('disabled',true)
-       console.log("Submitting form payload:", formData);
-    $.ajax({
-        type: "POST",
+    const gridData = buildGridData(employees);
+    employeeGrid = new gridjs.Grid({
+        columns: ['ID', 'First Name', 'Last Name', 'Employee Id', 'Phone', 'Department', 'Created On', 'Actions'],
+        data: gridData,
+        pagination: {
+            enabled: true,
+            limit: 5,
+            summary: true
+        },
+        search: true,
+        sort: true
+    }).render(document.getElementById("grid-wrapper"));
+}
+
+function fetchEmployees() {
+    $.get('/employee/list', function (data) {
+        employees = data;
+        if (employeeGrid) {
+            employeeGrid.updateConfig({
+                data: buildGridData(employees)
+            }).forceRender();
+        } else {
+            renderGrid();
+        }
+    });
+}
+
+$(document).ready(function () {
+    fetchEmployees();
+
+    $('#exampleModal').on('hidden.bs.modal', function () {
+        $('#employee')[0].reset();
+        $('#employee').removeData('employee-id');
+        $('#tuma').text('Save');
+    });
+
+    $('#employee').on('submit', function (e) {
+        e.preventDefault();
+
+        const formData = formToJSON(this);
+        const employeeId = $('#employee').data('employee-id');
+        const url = employeeId ? `/employee/update/${employeeId}` : "/employee/create";
+
+        const sub = $('#tuma');
+        const originalText = sub.text();
+
+        sub.html("Submitting...").prop('disabled', true);
+
+        $.ajax({
+            type: "POST",
             url: url,
             data: JSON.stringify(formData),
             contentType: 'application/json',
-            success: function(response){
-              sub.html("send message").prop('disabled',false)  
-              $('#employee')[0].reset();
-              showToast(response.message);
+            success: function (response) {
+                sub.html(originalText).prop('disabled', false);
+                $('#employee')[0].reset();
+                $('#exampleModal').modal('hide');
+                $('#employee').removeData('employee-id');
+                $('#tuma').text('Save');
+                fetchEmployees();
+                showToast(response.message);
             },
             error: function (xhr) {
-    console.log(xhr);
-    sub.html('send').prop('disabled', false);
+                console.log(xhr);
+                sub.html(originalText).prop('disabled', false);
 
-    let errormessage = 'An unexpected error occurred';
+                let errormessage = 'An unexpected error occurred';
 
-    // Try parsing JSON safely
-    if (xhr.responseJSON && xhr.responseJSON.error) {
-        errormessage = xhr.responseJSON.error;
-    } else if (xhr.responseText) {
-        try {
-            const parsed = JSON.parse(xhr.responseText);
-            if (parsed && parsed.error) {
-                errormessage = parsed.error;
-            } else {
-                errormessage = xhr.responseText; // fallback to raw text
+                if (xhr.responseJSON?.error) {
+                    errormessage = xhr.responseJSON.error;
+                } else if (xhr.responseText) {
+                    try {
+                        const parsed = JSON.parse(xhr.responseText);
+                        errormessage = parsed.error || xhr.responseText;
+                    } catch (e) {
+                        errormessage = xhr.responseText;
+                    }
+                }
+
+                showToast(errormessage, false);
             }
-        } catch (e) {
-            errormessage = xhr.responseText; // if not JSON, show raw response
-        }
-    }
+        });
+    });
 
-    alert(errormessage);
-}
-
-
-    })
-  })
-  $(document).on('click', '.delete-btn', function () {
+    $(document).on('click', '.delete-btn', function () {
         const employeeId = $(this).data('id');
-    if (!confirm(`Are you sure you want to delete this employee? ${employeeId}`)) return;
-     console.log(employeeId);
-    $.ajax({
-        url: '/employee/delete/' + employeeId,
-        type: 'DELETE',
-        success: function(response) {
-            showToast(response.message);
-            row.remove();
-        },
-        error: function(xhr) {
-            console.log(xhr)
-            alert(xhr.responseJSON.error);
-        }
+        if (!confirm(`Are you sure you want to delete this employee? ${employeeId}`)) return;
+
+        $.ajax({
+            url: `/employee/delete/${employeeId}`,
+            type: 'DELETE',
+            success: function (response) {
+                showToast(response.message);
+                fetchEmployees();
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                const errormsg = xhr.responseJSON?.error || 'Delete failed.';
+                showToast(errormsg, false);
+            }
+        });
     });
 });
-});
-}
-
-)

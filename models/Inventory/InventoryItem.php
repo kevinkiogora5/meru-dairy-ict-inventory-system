@@ -12,7 +12,7 @@ class InventoryItem extends DbModel
     public int $category_id = 0;
     public string $model = "";
     public string $brand = "";
-    public string $status = "available";
+    public string $status = "Available";
     public string $item_condition = "";
     public int $created_by = 0;
     public string $created_at = "";

@@ -50,9 +50,4 @@ class locationsService
         $items->deleted_at = date('Y-m-d H:i:s');
         return $items->save();
     }
-
-    public function search(string $term, array $columns, ?int $limit = null): array
-    {
-        return locations::search($term, $columns, $limit);
-    }
 }

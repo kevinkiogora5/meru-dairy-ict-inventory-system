@@ -77,27 +77,69 @@ public function getAssignmentsByEmployee(int $employeeId): array
     }
         return $items;
     }
-    public function findAssignment(int $employeeId, int $itemId): ?InventoryAssignment
+// This method now correctly finds the assignment by its primary key (ID)
+// and also validates the employee ID.
+public function findAssignment(int $employeeId, int $assignmentId): ?InventoryAssignment
 {
-    return InventoryAssignment::findOne([
-        'employee_id' => $employeeId,
-        'inventory_item_id' => $itemId,
+    $assignment = InventoryAssignment::findOne([
+        'id' => $assignmentId
     ]);
+
+    // Check if the assignment exists and belongs to the correct employee
+    if ($assignment && $assignment->employee_id === $employeeId) {
+        return $assignment;
+    }
+
+    return null;
 }
 
-
-    public function update(int $id, array $data) : ?InventoryAssignment
-    {
-        $items = InventoryAssignment::findOne(['id' => $id]);
-        if(!$items){
-            throw new ValidationException(['Item not found.']);
-        }
-        $items->loadData($data);
-        if (!$items->save()) {
-            throw new ValidationException($items->getErrors());
-        }
-        return $items;
+    public function update(int $id, array $data): ?InventoryAssignment
+{
+    // 1. Find the existing assignment record.
+    $assignment = InventoryAssignment::findOne(['id' => $id]);
+    if (!$assignment) {
+        throw new ValidationException(['Assignment not found.']);
     }
+
+    // 2. Store the original inventory item ID before loading new data.
+    $oldInventoryItemId = $assignment->inventory_item_id;
+
+    // 3. Load the new data from the request.
+    $assignment->loadData($data);
+
+    // 4. Validate and save the updated assignment record.
+    if (!$assignment->save()) {
+        throw new ValidationException($assignment->getErrors());
+    }
+
+    // 5. Check if the inventory item ID has changed.
+    if ($oldInventoryItemId !== $assignment->inventory_item_id) {
+        // a) Find the old item and mark its status as 'Available'.
+        $oldItem = InventoryItem::findOne(['id' => $oldInventoryItemId]);
+        if ($oldItem) {
+            $oldItem->status = 'Available';
+            $oldItem->save();
+        }
+
+        // b) Find the new item and mark its status as 'Assigned'.
+        $newItem = InventoryItem::findOne(['id' => $assignment->inventory_item_id]);
+        if ($newItem) {
+            // Check to ensure the new item isn't already actively assigned elsewhere.
+            // Your 'create' method already has a check for this, but it's good practice
+            // to ensure the item is available before marking it as assigned.
+            if ($newItem->status === 'Available') {
+                $newItem->status = 'Assigned';
+                $newItem->save();
+            } else {
+                // If the new item is not available, you might want to handle this case
+                // to prevent inconsistent data, e.g., by throwing an exception or logging.
+                // For now, we'll just return the updated assignment without changing the status.
+            }
+        }
+    }
+
+    return $assignment;
+}
 
     public function delete(int $id): bool
     {

@@ -96,10 +96,4 @@ public function getUnassignedItems(): array
         $items->deleted_at=date('Y-m-d H:i:s');
         return $items->save();
     }
-
-    public function search(string $term, array $columns, ?int $limit = null): array
-    {
-        return InventoryItem::search($term, $columns, $limit);
-    }
 }
-// someway to interact with the inventory_items model.

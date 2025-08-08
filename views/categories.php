@@ -2,24 +2,21 @@
     <div class="container-fluid">
 
         <!-- Breadcrumb start -->
-        <div class="row m-1">
-            <div class="col-12 ">
+        <div class="row m-4">
+            <div class="col-md-6">
                 <h4 class="main-title">Manage Inventory categories</h4>
             </div>
+            <div class="col-md-6 d-flex justify-content-end">
+             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal">
+                            Add Categories
+                        </button>
+            </div>
         </div>
-        <!-- Breadcrumb end -->
-
         <!-- Form Validation start -->
         <div class="row ">
             <!-- Tooltips start -->
             <div class="col-12">
-                <div class="card">
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#exampleModal">
-                            Add Categories
-                        </button>
-
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
@@ -39,7 +36,7 @@
                                             <div class="col-md-6">
                                                 <label class="form-label">Description</label>
                                                 <input class="form-control" id='description' name="description" type="text">
-                                            </div>
+                                            <div class="col-12 text-end mt-2">
                                             <button type="submit" id="tuma" class="btn btn-primary">Save</button>
                                         </form>
                                     </div>
@@ -49,10 +46,11 @@
                     </div>
                 </div>
                  <!-- Grid.js Table Placeholder -->
-                    <div class="card-body">
                         <div id="grid-wrapper"></div>
-                    </div>
-    <!-- Form Validation end -->
+                </div>
+            </div>
+        </div>
+        <!-- Form Validation end -->
 
     </div>
 </main>

@@ -35,7 +35,7 @@ function renderGrid() {
         return;
     }
     const gridData = buildGridData(categories);
-    new gridjs.Grid({
+    categoryGrid = new gridjs.Grid({
         columns: ['ID', 'Type', 'Description', 'Created On', 'Actions'],
         data: gridData,
         pagination: {
@@ -105,8 +105,13 @@ $(document).ready(function(){
             contentType: 'application/json',
             success: function(response){
               sub.html("send message").prop('disabled',false)  
-              $('#category')[0].reset();
-              showToast(response.message);
+             $('#category')[0].reset();
+$('#exampleModal').modal('hide');
+$('#category').removeData("category-id");
+$('#tuma').text('Save');
+fetchCategories(); // 🔄
+showToast(response.message);
+
             },
             error: function (xhr) {
     console.log(xhr);
@@ -144,8 +149,9 @@ $(document).ready(function(){
         url: '/category/delete/' + categoryId,
         type: 'DELETE',
         success: function(response) {
-            showToast(response.message);
-            row.remove();
+           showToast(response.message);
+fetchCategories(); // 🔄
+
         },
         error: function(xhr) {
             console.log(xhr)

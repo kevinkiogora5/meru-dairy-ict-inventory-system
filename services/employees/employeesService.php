@@ -88,9 +88,4 @@ public function getEmployeesWithAssignments(): array
         $items->deleted_at = date('Y-m-d H:i:s');
         return $items->save();
     }
-
-    public function search(string $term, array $columns, ?int $limit = null): array
-    {
-        return employees::search($term, $columns, $limit);
-    }
 }
