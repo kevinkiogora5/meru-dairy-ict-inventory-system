@@ -14,7 +14,7 @@
                             </div>
 
                             <div class="signup-bg-img text-center">
-                                <img alt="Sign In Illustration" class="img-fluid" src="../assets/images/login/01.png">
+                                <img alt="Sign In Illustration" class="img-fluid " src="../assets/logo/login.jpg" style="height:300px;">
                             </div>
                         </div>
                     </div>
@@ -54,7 +54,7 @@
 
     <!-- Scripts -->
     <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/scripts/openjs/openjs.js"></script>
     <script src="/scripts/base/base.js"></script>
     <script src="/scripts/login/login.js"></script>
 </body>

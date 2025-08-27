@@ -2,15 +2,65 @@
     <div class="container-fluid">
 
         <!-- Breadcrumb start -->
-        <div class="row m-4">
+        <div class="row m-3">
             <div class="col-md-6">
                 <h4 class="main-title">Manage Inventory Items</h4>
             </div>
             <div class="col-md-6 d-flex justify-content-end">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+         <div class="d-flex align-items-center mx-2">
+    <!-- Filters -->
+    <form id="reportFilterForm" class="d-flex align-items-center">
+        <!-- Category filter -->
+        <select name="category_id" id="categoryFilter" class="form-select me-2 w-auto" style="min-width: 200px;">
+            <option value="">All Categories</option>
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?= $cat->id ?>"><?= htmlspecialchars($cat->type) ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <!-- Date filter -->
+        <input type="date" name="created_at" id="dateFilter" class="form-control me-2">
+
+        <!-- Dropdown for report type -->
+        <div class="dropdown">
+            <button class="btn btn-success dropdown-toggle" type="button" id="reportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Generate Report
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="reportDropdown">
+                <li>
+                    <a class="dropdown-item" href="#" data-type="pdf">PDF Report</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="#" data-type="excel">Excel Report</a>
+                </li>
+            </ul>
+        </div>
+    </form>
+</div>
+
+<script>
+document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const type = this.getAttribute('data-type');
+        const category = document.getElementById('categoryFilter').value;
+        const date = document.getElementById('dateFilter').value;
+
+        // Build URL with filters
+        let url = `/inventory/report?type=${type}`;
+        if (category) url += `&category_id=${category}`;
+        if (date) url += `&created_at=${date}`;
+
+        // Open report in new tab
+        window.open(url, '_blank');
+    });
+});
+</script>
+ <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                     data-bs-target="#exampleModal">
                     Add Items
                 </button>
+
             </div>
         </div>
         <!-- Breadcrumb end -->
@@ -80,10 +130,10 @@
     </div>
     <!-- Form Validation end -->
 </main>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/scripts/openjs/openjs.js"></script>
 <script src="/scripts/base/base.js"></script>
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="/scripts/gridjs/gridjs.js"></script>
+<link href="/scripts/gridjs/theme.css" rel="stylesheet" />
 <script>
     var goods = <?php echo json_encode($items) ?>;
 </script>

@@ -51,12 +51,12 @@ class usersService
     {
         $user = users::findOne(['email'=> $data['email']]);
            if (!$user) {
-            throw new ValidationException(['email' => 'User not found with the provided email.']);
+            throw new ValidationException(['email' => 'Invalid credentials.']);
         }
 
 
         if (!password_verify($data['password'], $user->password)) {
-            throw new ValidationException(['password' => 'Incorrect password.']);
+            throw new ValidationException(['password' => 'Invalid credentials.']);
         }
         $user->session_token = bin2hex(random_bytes(16)); // Generate a random session token
         $user->last_auth_at = date('Y-m-d H:i:s'); // Update last authentication time

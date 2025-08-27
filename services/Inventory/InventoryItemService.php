@@ -7,30 +7,46 @@ use sigawa\mvccore\exception\ValidationException;
 
 class InventoryItemService
 { 
-    public function getAll(): array
+public function getAll(array $filters = []): array 
 {
-   $sql = "
-    SELECT 
-        ii.id,
-        ii.name,
-        ii.model,
-        ii.brand,
-        ii.status,
-        ii.item_condition,
-        ii.serial_number,
-        ii.category_id,
-        ii.created_at,
-        ic.type AS category_type 
-    FROM 
-        inventory_items ii
-    LEFT JOIN 
-        inventory_categories ic ON ii.category_id = ic.id
-    WHERE 
-        ii.deleted_at IS NULL
-";
+    $sql = "
+        SELECT 
+            ii.id,
+            ii.name,
+            ii.model,
+            ii.brand,
+            ii.status,
+            ii.item_condition,
+            ii.serial_number,
+            ii.category_id,
+            ii.created_at,
+            ic.type AS category_type 
+        FROM 
+            inventory_items ii
+        LEFT JOIN 
+            inventory_categories ic ON ii.category_id = ic.id
+        WHERE 
+            ii.deleted_at IS NULL
+    ";
 
-    return InventoryItem::findByQuery($sql);
+    $params = [];
+
+    // Filter by category
+    if (!empty($filters['category_id'])) {
+        $sql .= " AND ii.category_id = :category_id";
+        $params['category_id'] = $filters['category_id'];
+    }
+
+    // Filter by creation date
+    if (!empty($filters['created_at'])) {
+        $sql .= " AND DATE(ii.created_at) = :created_at";
+        $params['created_at'] = $filters['created_at'];
+    }
+
+    return InventoryItem::findByQuery($sql, $params);
 }
+
+
 public function getUnassignedItems(): array
 {
     $sql = "

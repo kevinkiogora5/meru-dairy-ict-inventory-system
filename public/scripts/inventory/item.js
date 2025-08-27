@@ -71,7 +71,7 @@ function renderGrid() {
         data: gridData,
         pagination: {
             enabled: true,
-            limit: 10,
+            limit: 5,
             summary: true
         },
         search: true,

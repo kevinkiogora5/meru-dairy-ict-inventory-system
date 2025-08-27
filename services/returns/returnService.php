@@ -9,9 +9,9 @@ use sigawa\mvccore\exception\ValidationException;
 
 class returnService
 {
-    public function getAll(): array
-    {
-      $sql = " SELECT 
+   public function getAll(array $filters = []): array
+{
+    $sql = "SELECT 
                 r.id,
                 r.returned_condition,
                 r.return_date,
@@ -20,16 +20,39 @@ class returnService
                 ia.employee_id,
                 ia.inventory_item_id,
                 i.name AS inventory_item_name,
-                CONCAT(e.first_name, ' - ', e.last_name) AS employee_email
+                CONCAT(e.first_name, ' ', e.last_name) AS employee_email, -- ✅ renamed
+                l.id AS location_id,
+                CONCAT(l.county, ' - ', l.office) AS location_name       -- ✅ added for match
             FROM returns r
             LEFT JOIN inventory_assignment ia ON r.inventory_assignment_id = ia.id
             LEFT JOIN inventory_items i ON ia.inventory_item_id = i.id
             LEFT JOIN employees e ON ia.employee_id = e.id
-            WHERE r.deleted_at IS NULL
-            ORDER BY r.return_date DESC
-            ";
-        return returns::findAllByQuery($sql);
+            LEFT JOIN location l ON ia.location_id = l.id
+            WHERE r.deleted_at IS NULL";
+
+    $params = [];
+
+    // ✅ Filters support
+    if (!empty($filters['employee_id'])) {
+        $sql .= " AND ia.employee_id = :employee_id";
+        $params['employee_id'] = $filters['employee_id'];
     }
+
+    if (!empty($filters['location_id'])) {
+        $sql .= " AND ia.location_id = :location_id";
+        $params['location_id'] = $filters['location_id'];
+    }
+
+    if (!empty($filters['created_at'])) {
+        $sql .= " AND DATE(r.return_date) = :created_at";
+        $params['created_at'] = $filters['created_at'];
+    }
+
+    $sql .= " ORDER BY r.return_date DESC";
+
+    return returns::findAllByQuery($sql, $params);
+}
+
 
     public function create(array $data): ?returns
 {

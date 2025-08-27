@@ -19,6 +19,8 @@ class users extends UserModel
     public string $updated_at = '';
     public ?string $deleted_at = null;  // nullable string
     public ?string $last_auth_at = null;  // nullable string
+    public ?string $role = 'user'; // default role is 'user'
+
     public static function tableName(): string
     {
         return strtolower('User');
@@ -31,6 +33,7 @@ class users extends UserModel
             'email',
             'phone',
             'password',
+            'role',
             'password_created_at',
             'online_status',
             'session_token',
@@ -59,6 +62,7 @@ class users extends UserModel
             'email' => [self::RULE_REQUIRED,[self::RULE_UNIQUE, 'class' => self::class]],
             'phone' => [self::RULE_REQUIRED,[self::RULE_UNIQUE, 'class' => self::class]],
             'password' => [self::RULE_PASSWORD],
+            'role' => [self::RULE_REQUIRED],
         ];
     }
     public function beforeSave(): void

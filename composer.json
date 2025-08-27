@@ -13,6 +13,9 @@
         }
     ],
     "require": {
-        "sigawa/mvc-core": "^1.2"
+        "sigawa/mvc-core": "^1.2",
+        "tecnickcom/tcpdf": "dev-main",
+        "phpoffice/phpspreadsheet": "^5.0"
     }
 }
+ 

@@ -17,6 +17,7 @@ class usersController extends Controller
     public function __construct()
     {
         $this->service = new usersService();
+        
     }
      public function index(Request $request, Response $response)
     {
@@ -27,15 +28,31 @@ class usersController extends Controller
 
         ]);
     }
-     public function signup(Request $request, Response $response)
-    {
+    public function signup(Request $request, Response $response)
+{
+    $this->setLayout('login');
 
-        $this->setLayout('login');
+// Instead of fetching from session directly:
+$currentUser = Application::$app->user;  // <- use this
 
-        return $this->render("signup", [
+// Make sure it's an array/object with role
+if (is_object($currentUser)) {
+    $role = $currentUser->role ?? null;
+} elseif (is_array($currentUser)) {
+    $role = $currentUser['role'] ?? null;
+} else {
+    $role = null;
+}
 
-        ]);
-    }
+if (!in_array($role, ['admin', 'manager'])) {
+    return $this->render('forbidden');
+}
+
+// Render the signup page
+return $this->render("signup", []);
+
+}
+
  public function createuser(Request $request, Response $response)
 {
     if (!$request->isPost()) {
@@ -106,9 +123,21 @@ class usersController extends Controller
 
             Application::$app->login($user); // Set the user in the application context
 
-            Application::$app->session->set('user', $user); // Store user in session
+            Application::$app->session->set('user', [
+            'id'    => $user->id,
+            'email' => $user->email,
+            'role'  => $user->role,
+        ]);
 
-            return $response->json(['success' => true, 'message' => 'Login successful.', 'data' => $user]);
+            return $response->json([
+            'success' => true,
+            'message' => 'Login successful.',
+            'data'    => [
+                'id'    => $user->id,
+                'email' => $user->email,
+                'role'  => $user->role,
+            ]
+        ]);
         } catch (ValidationException $e) {
             return $response->json(['success' => false, 'error' => $e->errors], 400);
         }

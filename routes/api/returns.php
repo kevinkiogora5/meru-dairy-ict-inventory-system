@@ -9,3 +9,4 @@ $router->delete('/return/delete/{id}', [ReturnController::class, 'delete']);
 $router->get('/return/assignments-by-employee', [ReturnController::class, 'getAssignmentsByEmployee']);
 $router->get('/return/available-items-by-employee', [ReturnController::class, 'getAssignmentsByEmployee']);
 $router->get('/return/list', [ReturnController::class, 'list']);
+$router->get('/return/report', [ReturnController::class, 'report']);

@@ -128,4 +128,151 @@ $data['inventory_assignment_id'] = $assignment->id;
         return $response->json(['error' => 'Failed to fetch returns.'], 500);
     }
 }
+public function report(Request $request, Response $response)
+{
+    $type = $request->getQueryParams()['type'] ?? 'pdf';
+    $filters = [
+        'employee_id' => $request->getQueryParams()['employee_id'] ?? null,
+        'created_at'  => $request->getQueryParams()['created_at'] ?? null,
+    ];
+
+    try {
+        // Fetch filtered returns
+        $returns = $this->service->getAll($filters);
+
+        if ($type === 'excel') {
+            // Excel via PhpSpreadsheet
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Header logo
+            $logo = __DIR__ . '/../../public/assets/logo/OIP.jpg';
+            if (file_exists($logo)) {
+                $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                $drawing->setName('Logo');
+                $drawing->setPath($logo);
+                $drawing->setHeight(80);
+                $drawing->setCoordinates('B1');
+                $drawing->setWorksheet($sheet);
+            }
+
+            // Company info
+            $sheet->mergeCells('B1:I5');
+            $sheet->setCellValue(
+                'B1',
+                "MERU CENTRAL DAIRY CO-OPERATIVE UNION LIMITED\n" .
+                "P.O. BOX 2919 MERU - 60200\n" .
+                "TEL: 064-30081, 30082, 32494, 0733554040 | FAX: 064-30263\n" .
+                "Email: maziwa@merudairy.co.ke | sales@merudairy.co.ke\n" .
+                "Website: www.merudairy.co.ke"
+            );
+            $sheet->getStyle('B1')->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+                ->setWrapText(true);
+            $sheet->getStyle('B1')->getFont()->setBold(true);
+
+            // Table headers (row 7)
+            $startRow = 7;
+            $headers = ['Employee', 'Return Item', 'Condition', 'Comments', 'Returned At'];
+            $col = 'B';
+            foreach ($headers as $header) {
+                $sheet->setCellValue($col . $startRow, $header);
+                $col++;
+            }
+
+            // Fill table data
+            $row = $startRow + 1;
+            foreach ($returns as $r) {
+                $sheet->setCellValue('B' . $row, $r->employee_email ?? '');
+                $sheet->setCellValue('C' . $row, $r->inventory_item_name ?? '');
+                $sheet->setCellValue('D' . $row, $r->returned_condition ?? '');
+                $sheet->setCellValue('E' . $row, $r->comments ?? '');
+                $sheet->setCellValue('F' . $row, $r->return_date ?? '');
+                $row++;
+            }
+
+            // Download Excel
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="return_report.xlsx"');
+            header('Cache-Control: max-age=0');
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+            exit;
+
+        } else {
+            // PDF via TCPDF
+            $pdf = new \TCPDF('L');
+            $pdf->SetCreator('Inventory System');
+            $pdf->SetAuthor('Inventory System');
+            $pdf->SetTitle('Return Report');
+            $pdf->SetMargins(10, 15, 10);
+            $pdf->AddPage();
+            $pdf->SetFont('helvetica', '', 10);
+
+            // Logo
+            $logoFile = __DIR__ . '/../../public/assets/logo/OIP.jpg';
+            if (file_exists($logoFile)) {
+                $pdf->Image($logoFile, 25, 15, 40);
+            }
+
+            // Company Info
+            $html = <<<EOD
+<h2 style="text-align:center;">MERU CENTRAL DAIRY CO-OPERATIVE UNION LIMITED</h2>
+<p style="text-align:center; font-size:10px;">
+P.O. BOX 2919 MERU - 60200<br>
+TEL: 064-30081, 30082, 32494, 0733554040 | FAX: 064-30263<br>
+Email: maziwa@merudairy.co.ke | sales@merudairy.co.ke<br>
+Website: www.merudairy.co.ke
+</p>
+<hr>
+EOD;
+            $pdf->writeHTML($html, true, false, true, false, '');
+            $pdf->Ln(5);
+
+            // Title
+            $title = 'Return Report';
+            if ($filters['employee_id']) {
+                $title .= ' - Employee: ' . ($returns[0]->employee_email ?? 'N/A');
+            }
+            if ($filters['created_at']) {
+                $title .= ' - Date: ' . $filters['created_at'];
+            }
+
+            $pdf->SetFont('helvetica', 'B', 14);
+            $pdf->Cell(0, 10, $title, 0, 1, 'C');
+            $pdf->Ln(5);
+
+            // Table headers
+            $headers = ['Employee', 'Return Item', 'Condition', 'Comments', 'Returned At'];
+            $colCount = count($headers);
+            $tableWidth = $pdf->getPageWidth() - $pdf->getMargins()['left'] - $pdf->getMargins()['right'];
+            $colWidth = $tableWidth / $colCount;
+
+            $pdf->SetFont('helvetica', 'B', 10);
+            foreach ($headers as $header) {
+                $pdf->Cell($colWidth, 10, $header, 1, 0, 'C');
+            }
+            $pdf->Ln();
+
+            // Table rows
+            $pdf->SetFont('helvetica', '', 9);
+            foreach ($returns as $r) {
+                $pdf->Cell($colWidth, 8, $r->employee_email ?? '', 1);
+                $pdf->Cell($colWidth, 8, $r->inventory_item_name ?? '', 1);
+                $pdf->Cell($colWidth, 8, $r->returned_condition ?? '', 1);
+                $pdf->Cell($colWidth, 8, $r->comments ?? '', 1);
+                $pdf->Cell($colWidth, 8, $r->return_date ?? '', 1);
+                $pdf->Ln();
+            }
+
+            // Output PDF
+            $pdf->Output('return_report.pdf', 'I');
+            exit;
+        }
+    } catch (\Exception $e) {
+        return $response->json(['error' => 'Failed to generate report: ' . $e->getMessage()], 500);
+    }
+}
+
 }

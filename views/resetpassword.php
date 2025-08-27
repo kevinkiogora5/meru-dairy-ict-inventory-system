@@ -40,6 +40,6 @@
     </div>
 </main>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/scripts/openjs/openjs.js"></script>
 <script src="/scripts/base/base.js"></script>
 <script src="/scripts/auth/reset_password.js"></script>

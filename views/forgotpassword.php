@@ -21,6 +21,6 @@
         <a href="/login"><button id="loginBtn"  class="w-full bg-blue-900 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg hidden">Log In</button></a>
     </div>
 </main>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/scripts/openjs/openjs.js"></script>
 <script src="/scripts/base/base.js"></script>
 <script src="/scripts/auth/request_reset_password.js"></script>

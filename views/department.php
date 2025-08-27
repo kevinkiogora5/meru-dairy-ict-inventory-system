@@ -49,10 +49,10 @@
 
     </div>
 </main>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/scripts/openjs/openjs.js"></script>
 <script src="/scripts/base/base.js"></script>
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="/scripts/gridjs/gridjs.js"></script>
+<link href="/scripts/gridjs/theme.css" rel="stylesheet" />
 <script>
     var departments = <?php echo json_encode($departments) ?>;
 </script>

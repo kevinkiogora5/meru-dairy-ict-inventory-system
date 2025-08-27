@@ -10,12 +10,12 @@
                             <div class="signup-content mt-4 text-center">
                                 <span>
                                     <img alt="Mount Kenya Milk Logo" class="img-fluid"
-                                        src="../assets/logo/logo.png">
+                                        src="../assets/logo/logo2.png">
                                 </span>
                             </div>
 
                             <div class="signup-bg-img text-center">
-                                <img alt="Signup Illustration" class="img-fluid" src="../assets/images/login/02.png">
+                                <img alt="Signup Illustration" class="img-fluid" src="../assets/logo/signup.jpg">
                             </div>
                         </div>
                     </div>
@@ -50,6 +50,15 @@
                                     <input class="form-control" name="phone" id="phone" placeholder="Enter Your Phone"
                                         required type="text">
                                 </div>
+                                <div class="mb-3">
+    <label class="form-label" for="role">Role</label>
+    <select class="form-control" name="role" id="role" required>
+        <option value="user">User</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+    </select>
+</div>
+
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -92,7 +101,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/scripts/openjs/openjs.js"></script>
     <script src="/scripts/base/base.js"></script>
     <script src="/scripts/signup/signup.js"></script>
 </body>

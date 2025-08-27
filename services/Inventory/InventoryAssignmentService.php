@@ -8,28 +8,51 @@ use sigawa\mvccore\exception\ValidationException;
 
 class InventoryAssignmentService
 {
-public function getAll(): array
+public function getAll(array $filters = []): array
 {
-   $sql = "
-    SELECT 
-        ia.id,
-        ia.employee_id,
-        ia.inventory_item_id,
-        ia.location_id,
-        CONCAT(e.first_name, ' - ', e.last_name) AS employees_email,
-        ii.name AS items_name,
-        CONCAT(l.county, ' - ', l.office) AS location_name,
-        ia.issue_date,
-        ia.notes
-    FROM inventory_assignment ia
-    JOIN inventory_items ii ON ia.inventory_item_id = ii.id
-    JOIN employees e ON ia.employee_id = e.id
-    JOIN location l ON ia.location_id = l.id
-    WHERE ia.deleted_at IS NULL
-      AND ii.deleted_at IS NULL
-";
-    return InventoryAssignment::findAllByQuery($sql);
+    $sql = "
+        SELECT 
+            ia.id,
+            ia.employee_id,
+            ia.inventory_item_id,
+            ia.location_id,
+            CONCAT(e.first_name, ' ', e.last_name) AS employees_email, -- ✅ renamed
+            ii.name AS inventory_item_name,                           -- ✅ renamed
+            CONCAT(l.county, ' - ', l.office) AS location_name,
+            ia.issue_date AS created_at,                              -- ✅ renamed
+            ia.notes
+        FROM inventory_assignment ia
+        JOIN inventory_items ii ON ia.inventory_item_id = ii.id
+        JOIN employees e ON ia.employee_id = e.id
+        JOIN location l ON ia.location_id = l.id
+        WHERE ia.deleted_at IS NULL
+          AND ii.deleted_at IS NULL
+    ";
+
+    $params = [];
+
+    // ✅ Apply filters just like in report
+    if (!empty($filters['employee_id'])) {
+        $sql .= " AND ia.employee_id = :employee_id";
+        $params['employee_id'] = $filters['employee_id'];
+    }
+
+    if (!empty($filters['location_id'])) {
+        $sql .= " AND ia.location_id = :location_id";
+        $params['location_id'] = $filters['location_id'];
+    }
+
+    if (!empty($filters['created_at'])) {
+        $sql .= " AND DATE(ia.issue_date) = :created_at";
+        $params['created_at'] = $filters['created_at'];
+    }
+
+    $sql .= " ORDER BY ia.issue_date DESC";
+
+    return InventoryAssignment::findAllByQuery($sql, $params);
 }
+
+
 public function getAssignmentsByEmployee(int $employeeId): array
 {
     // SQL to get assignments that are active and NOT yet returned

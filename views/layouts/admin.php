@@ -77,7 +77,7 @@ $user =Application::$app->user;
     <link href="/assets/vendor/toastify/toastify.css" rel="stylesheet" type="text/css">
 
     <!-- Grid.js CSS -->
-    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <link href="/scripts/gridjs/theme.css" rel="stylesheet" />
 
 
 </head>
@@ -164,6 +164,14 @@ $user =Application::$app->user;
                             <li><a href="/returns">Manage Inventory Returns</a></li>
                         </ul>
                     </li>
+                     <li>
+                        <a aria-expanded="false" class="" data-bs-toggle="collapse" href="#advances">
+                            <i class="iconoir-archive"></i> Create User Account
+                        </a>
+                        <ul class="collapse" id="advances">
+                            <li><a href="/signup">Add users</a></li>
+                        </ul>
+                    </li>
         </nav>
         <!-- Menu Navigation ends -->
 
@@ -244,17 +252,28 @@ $user =Application::$app->user;
         <?php if (isset($user)): ?>
             <h6 class="mb-0"><?= $user->getDisplayName() ?></h6>
             <p class="f-s-12 mb-1 text-secondary"><?= $user->email ?></p>
-            <a href="#" id="logoutBtn" class="btn btn-light-danger btn-sm justify-content-center">
-  <i class="ph-duotone ph-sign-out pe-1 f-s-20"></i> Log Out
-</a>
-
-
-        <?php else: ?>
-            <h6 class="mb-0">Guest</h6>
-            <a class="btn btn-light-primary btn-sm" href="/login">Login</a>
         <?php endif; ?>
     </div>
+
+    <!-- Profile Dropdown -->
+    <div class="dropdown">
+        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" 
+           id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="<?= $user->profile_image ?? 'assets/logo/download.jpg' ?>" 
+                 alt="Profile" 
+                 class="rounded-circle" 
+                 style="width: 40px; height: 40px; object-fit: cover;">
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li>
+                      <a href="#" id="logoutBtn" class="btn btn-light-danger btn-sm justify-content-center">
+  <i class="ph-duotone ph-sign-out pe-1 f-s-20"></i> Log Out
+</a>
+            </li>
+        </ul>
+    </div>
 </li>
+
 
                                 </ul>
                             </div>
@@ -286,7 +305,7 @@ $user =Application::$app->user;
         <!-- Footer Section ends-->
     </div>
      <!-- logout-->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/scripts/openjs/openjs.js"></script>
 <script src="/scripts/base/base.js"></script>
 <script src="/scripts/logout/logout.js"></script>
 
@@ -322,7 +341,7 @@ $user =Application::$app->user;
     <!--toastify js-->
     <script src="/assets/vendor/toastify/toastify.js"></script>
     <!-- Grid.js JS -->
-    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+    <script src="/scripts/gridjs/gridjs.js"></script>
 
 
 </body>

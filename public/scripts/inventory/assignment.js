@@ -23,9 +23,9 @@ function buildGridData(data) {
     return data.map(assign => [
         assign.id,
         assign.employees_email,
-        assign.items_name,
+        assign.inventory_item_name,
         assign.location_name,
-        assign.issue_date,
+        assign.created_at,
         assign.notes,
         gridjs.html(`
             <button class="btn btn-sm btn-warning" onclick="openModal(${assign.id})">Edit</button>
